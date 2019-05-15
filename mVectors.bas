@@ -144,7 +144,7 @@ End Function
 '        X5 = X4 * x
 '
 '        fastEXP = (1! + INV2 * x + INV9 * X2 + INV72 * X3 + INV1008 * X4 + INV30240 * X5) / _
-'                  (1! - INV2 * x + INV9 * X2 - INV72 * X3 + INV1008 * X4 - INV30240 * X5)
+         '                  (1! - INV2 * x + INV9 * X2 - INV72 * X3 + INV1008 * X4 - INV30240 * X5)
 '
 '    Else
 '        fastEXP = Exp(x)

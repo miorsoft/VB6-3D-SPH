@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin VB.Form fMain 
-   Caption         =   "Spatial Grid Collision  Detection test"
+   Caption         =   "3D smoothed particles hydrodynamics"
    ClientHeight    =   9780
    ClientLeft      =   120
    ClientTop       =   420
@@ -328,6 +328,9 @@ Private Sub Form_Load()
 
     PIC.Cls
 
+    Me.Caption = Me.Caption & " V." & App.Major
+
+
     If Dir(App.Path & "\Frames", vbDirectory) = vbNullString Then MkDir App.Path & "\Frames"
     If Dir(App.Path & "\Frames\*.*", vbArchive) <> vbNullString Then Kill App.Path & "\Frames\*.*"
 
@@ -567,10 +570,10 @@ Public Sub MainLoop()
 
                     'V = Pressure(J) * 0.075
                     V = Pressure(J) * 0.15   'V5
-                    
+
                     PointToScreenCoords pX(J), pY(J), pZ(J), x, y, Z
                     If Z > 0 Then
-                       ' V = V + Z * 50 - 0.2
+                        ' V = V + Z * 50 - 0.2
                         If Phase(J) = 1 Then
                             'cyan
                             '.SetSourceRGBA 0.1 + V, 0.65 + V, 0.75 + V, 0.7  (V 1 , 2 )
@@ -708,35 +711,35 @@ Private Sub PIC_MouseMove(Button As Integer, Shift As Integer, x As Single, y As
     Dim D         As Double
 
     Static x0!, y0!, dx!, DY!
-     
+
     dx = x - x0: DY = y - y0
 
 
     Select Case Button
-        Case 0
-            x0 = x: y0 = y
-        Case 1
+    Case 0
+        x0 = x: y0 = y
+    Case 1
 
-            Pitch = Pitch - 0.25 * DY
-            Yaw = (Yaw - 0.25 * dx)    ' Mod 360
-            x0 = x: y0 = y
-            If Pitch > 90 Then Pitch = 90
-            If Pitch < -90 Then Pitch = -90
-            CameraSetRotation Yaw, Pitch
+        Pitch = Pitch - 0.25 * DY
+        Yaw = (Yaw - 0.25 * dx)    ' Mod 360
+        x0 = x: y0 = y
+        If Pitch > 90 Then Pitch = 90
+        If Pitch < -90 Then Pitch = -90
+        CameraSetRotation Yaw, Pitch
 
-            RecomputeBOX = True
+        RecomputeBOX = True
 
-        Case 2    'zoom
-            D = Length3(DIFF3(Camera.cFrom, Camera.cTo))
-            D = D - DY * 0.25
-'            If D < WW * 0.7 Then D = WW * 0.7
+    Case 2    'zoom
+        D = Length3(DIFF3(Camera.cFrom, Camera.cTo))
+        D = D - DY * 0.25
+        '            If D < WW * 0.7 Then D = WW * 0.7
 
-            With Camera
-                .cFrom = SUM3(MUL3(Normalize3(DIFF3(.cFrom, .cTo)), D), .cTo)
-            End With
-            CameraUpdate
+        With Camera
+            .cFrom = SUM3(MUL3(Normalize3(DIFF3(.cFrom, .cTo)), D), .cTo)
+        End With
+        CameraUpdate
 
-            RecomputeBOX = True
+        RecomputeBOX = True
 
     End Select
 

@@ -78,21 +78,21 @@ Public Sub CameraSetRotation(ByVal Yaw As Double, ByVal Pitch As Double)
 
     ' Camera UP = Y
 
-        With Camera
-            D = Length3(DIFF3(.cFrom, .cTo))
-            .cFrom.x = .cTo.x + D * (Sin(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
-            .cFrom.y = .cTo.y + D * (Sin(Pitch * Deg2Rad))
-            .cFrom.Z = .cTo.Z + D * (Cos(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
-        End With
+    With Camera
+        D = Length3(DIFF3(.cFrom, .cTo))
+        .cFrom.x = .cTo.x + D * (Sin(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
+        .cFrom.y = .cTo.y + D * (Sin(Pitch * Deg2Rad))
+        .cFrom.Z = .cTo.Z + D * (Cos(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
+    End With
 
-'    'cameraUP = Z
-'
-'    With Camera
-'        D = Length3(DIFF3(.cFrom, .cTo))
-'        .cFrom.x = .cTo.x + D * (Sin(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
-'        .cFrom.y = .cTo.y + D * (Cos(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
-'        .cFrom.Z = .cTo.Z + D * (Sin(Pitch * Deg2Rad))
-'    End With
+    '    'cameraUP = Z
+    '
+    '    With Camera
+    '        D = Length3(DIFF3(.cFrom, .cTo))
+    '        .cFrom.x = .cTo.x + D * (Sin(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
+    '        .cFrom.y = .cTo.y + D * (Cos(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
+    '        .cFrom.Z = .cTo.Z + D * (Sin(Pitch * Deg2Rad))
+    '    End With
 
     CameraUpdate
 
@@ -180,7 +180,7 @@ End Sub
 
 Public Function IsPointVisible(x As Double, y As Double, Z As Double) As Boolean
 
-    If Z < 0 Then Exit Function ' behind
+    If Z < 0 Then Exit Function    ' behind
 
     If x < 0 Then Exit Function
     If y < 0 Then Exit Function

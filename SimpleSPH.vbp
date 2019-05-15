@@ -1,6 +1,6 @@
 Type=Exe
 Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\Windows\system32\stdole2.tlb#OLE Automation
-Reference=*\G{C79C91A4-10F5-4F71-A490-3B7915514344}#2.6#0#..\____PhotoModularFX_0_3\BIN\vbRichClient5.dll#vbRichClient5
+Reference=*\G{C79C91A4-10F5-4F71-A490-3B7915514344}#2.6#0#..\..\VB6\____PhotoModularFX_0_3\BIN\vbRichClient5.dll#vbRichClient5
 Form=fMain.frm
 Class=cSpatialGrid3D; cSpatialGrid3D.cls
 Module=mMain; mMain.bas
@@ -16,7 +16,7 @@ Command32=""
 Name="SimpleSPH"
 HelpContextID="0"
 CompatibleMode="0"
-MajorVer=1
+MajorVer=5
 MinorVer=0
 RevisionVer=0
 AutoIncrementVer=0
