@@ -95,6 +95,7 @@ Public RetNofPairs As Long
 
 
 
+Public CAMERA     As c3DEasyCam
 
 
 

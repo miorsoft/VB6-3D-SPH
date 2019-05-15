@@ -16,32 +16,32 @@ Private Const INV30240 As Double = 3.30687830687831E-05
 
 Public Type tVec3
     x             As Double
-    y             As Double
+    Y             As Double
     Z             As Double
 End Type
 
-Public Function Atan2(ByVal x As Double, ByVal y As Double) As Double
+Public Function Atan2(ByVal x As Double, ByVal Y As Double) As Double
     If x Then
-        Atan2 = -PI + Atn(y / x) - (x > 0!) * PI
+        Atan2 = -PI + Atn(Y / x) - (x > 0!) * PI
     Else
-        Atan2 = -PIh - (y > 0!) * PI
+        Atan2 = -PIh - (Y > 0!) * PI
     End If
 End Function
 
-Public Function Vec3(x As Double, y As Double, Z As Double) As tVec3
+Public Function Vec3(x As Double, Y As Double, Z As Double) As tVec3
     Vec3.x = x
-    Vec3.y = y
+    Vec3.Y = Y
     Vec3.Z = Z
 End Function
 
 Public Function Length3(V As tVec3) As Double
     With V
-        Length3 = Sqr(.x * .x + .y * .y + .Z * .Z)
+        Length3 = Sqr(.x * .x + .Y * .Y + .Z * .Z)
     End With
 End Function
 Public Function Length32(V As tVec3) As Double
     With V
-        Length32 = .x * .x + .y * .y + .Z * .Z
+        Length32 = .x * .x + .Y * .Y + .Z * .Z
     End With
 End Function
 
@@ -49,7 +49,7 @@ End Function
 
 Public Function SUM3(v1 As tVec3, v2 As tVec3) As tVec3
     SUM3.x = v1.x + v2.x
-    SUM3.y = v1.y + v2.y
+    SUM3.Y = v1.Y + v2.Y
     SUM3.Z = v1.Z + v2.Z
 End Function
 
@@ -58,11 +58,11 @@ End Function
 Public Function Normalize3(V As tVec3) As tVec3
     Dim D         As Double
 
-    D = (V.x * V.x + V.y * V.y + V.Z * V.Z)
+    D = (V.x * V.x + V.Y * V.Y + V.Z * V.Z)
     If D Then
         D = 1# / Sqr(D)
         Normalize3.x = V.x * D
-        Normalize3.y = V.y * D
+        Normalize3.Y = V.Y * D
         Normalize3.Z = V.Z * D
     End If
 
@@ -70,7 +70,7 @@ End Function
 
 Public Function MUL3(V As tVec3, ByVal A As Double) As tVec3
     MUL3.x = V.x * A
-    MUL3.y = V.y * A
+    MUL3.Y = V.Y * A
     MUL3.Z = V.Z * A
 
 End Function
@@ -78,19 +78,19 @@ End Function
 Public Function DOT3(v1 As tVec3, v2 As tVec3) As Double
 
     DOT3 = (v1.x * v2.x) + _
-           (v1.y * v2.y) + _
+           (v1.Y * v2.Y) + _
            (v1.Z * v2.Z)
 
 End Function
 
 Public Function CROSS3(A As tVec3, B As tVec3) As tVec3
-    CROSS3.x = A.y * B.Z - A.Z * B.y
-    CROSS3.y = A.Z * B.x - A.x * B.Z
-    CROSS3.Z = A.x * B.y - A.y * B.x
+    CROSS3.x = A.Y * B.Z - A.Z * B.Y
+    CROSS3.Y = A.Z * B.x - A.x * B.Z
+    CROSS3.Z = A.x * B.Y - A.Y * B.x
 End Function
 Public Function DIFF3(v1 As tVec3, v2 As tVec3) As tVec3
     DIFF3.x = v1.x - v2.x
-    DIFF3.y = v1.y - v2.y
+    DIFF3.Y = v1.Y - v2.Y
     DIFF3.Z = v1.Z - v2.Z
 
 End Function
