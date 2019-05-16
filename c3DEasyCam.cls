@@ -16,7 +16,9 @@ Attribute VB_Exposed = False
 ' 3D CAMERA by
 ' reexre - miorsoft - Roberto Mior
 
-' WORKS ONLY with VectorUP = 0, 1 , 0
+' WORKS ONLY with VectorUP = 0, -1 , 0
+
+' LEFT HAND RULES
 
 
 Option Explicit
@@ -36,6 +38,8 @@ Private NearPlaneDist As Double
 
 Private mPitch    As Double
 Private mYaw      As Double
+Private mZOOM As Double
+
 
 Friend Property Let Position(V As tVec3)
     mPosition = V
@@ -71,6 +75,16 @@ Friend Sub GetRotation(ByRef Yaw As Double, ByRef Pitch As Double)
     Yaw = mYaw
 End Sub
 
+Friend Property Let Zoom(V As Double)
+    mZOOM = V
+End Property
+
+Friend Property Get Zoom() As Double
+    Zoom = mZOOM
+End Property
+
+
+
 Friend Sub Init(CameraFrom As tVec3, CameraTo As tVec3, ScreenCenter As tVec3, UP As tVec3)
     mPosition = CameraFrom
     mLookAt = CameraTo
@@ -78,6 +92,8 @@ Friend Sub Init(CameraFrom As tVec3, CameraTo As tVec3, ScreenCenter As tVec3, U
     VectorUP = UP
 
     NearPlaneDist = 5
+
+Zoom = 1
 
     Update
 End Sub
@@ -89,11 +105,11 @@ Private Sub Update(Optional UpdatePitchYawValues As Boolean = False)
     Dim D         As tVec3
 
     camWW = Normalize3(DIFF3(mLookAt, mPosition))
-    camUU = Normalize3(CROSS3(camWW, VectorUP))
+    camUU = Normalize3(CROSS3(VectorUP, camWW))
     camVV = Normalize3(CROSS3(camUU, camWW))
 
     If UpdatePitchYawValues Then '  (GetRotation)
-        ' ############    CAMERA vectorUP  MUST BE 0,1,0
+        ' ############    CAMERA vectorUP  MUST BE 0,-1,0
         'https://math.stackexchange.com/questions/470112/calculate-camera-pitch-yaw-to-face-point
         'D = DIFF3(Position, lookat)
         D = camWW    'opposite sign than above
@@ -112,7 +128,7 @@ Public Sub SetRotation(ByVal Yaw As Double, ByVal Pitch As Double)
     ' http://www.vbforums.com/showthread.php?870755-3D-Swimming-Fish-Algorithm&p=5356667&viewfull=1#post5356667
 
 
-    ' ############    CAMERA vectorUP MUST BE 0,1,0
+    ' ############    CAMERA vectorUP MUST BE 0,-1,0
     D = Length3(DIFF3(mPosition, mLookAt))
     mPosition.x = mLookAt.x + D * (Sin(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
     mPosition.Y = mLookAt.Y + D * (Sin(Pitch * Deg2Rad))
@@ -141,8 +157,8 @@ Friend Function PointToScreenWDCam(WorldPos As tVec3, ProjectedDistFromCam As Do
     P.Y = DOT3(S, camVV)
     P.Z = DOT3(S, camWW)
     IZ = 1 / P.Z
-    PointToScreenWDCam.x = P.x * IZ * mScreenCenter.x + mScreenCenter.x
-    PointToScreenWDCam.Y = P.Y * IZ * mScreenCenter.x + mScreenCenter.Y
+    PointToScreenWDCam.x = P.x * IZ * Zoom * mScreenCenter.x + mScreenCenter.x
+    PointToScreenWDCam.Y = P.Y * IZ * Zoom * mScreenCenter.x + mScreenCenter.Y
     PointToScreenWDCam.Z = IZ  ' if its negative point is behind camera
     ProjectedDistFromCam = P.Z  ' if its negative point is behind camera
 
@@ -160,8 +176,8 @@ Friend Sub PointToScreenCoords(ByVal x As Double, ByVal Y As Double, ByVal Z As 
     P.Y = DOT3(S, camVV)
     P.Z = DOT3(S, camWW)
     IZ = 1 / P.Z
-    rX = P.x * IZ * mScreenCenter.x + mScreenCenter.x
-    rY = P.Y * IZ * mScreenCenter.x + mScreenCenter.Y
+    rX = P.x * IZ * Zoom * mScreenCenter.x + mScreenCenter.x
+    rY = P.Y * IZ * Zoom * mScreenCenter.x + mScreenCenter.Y
     rZ = IZ  ' if its negative point is behind camera
 
 End Sub
@@ -207,11 +223,29 @@ Friend Function IsPointVisible(ByVal x As Double, ByVal Y As Double, ByVal Z As 
 
     If Z < 0 Then Exit Function    ' behind
 
-    If x < 0 Then Exit Function
+    If x < 0 Then Exit Function    ' check if outside screen
     If Y < 0 Then Exit Function
     If x > mScreenCenter.x * 2 Then Exit Function
     If Y > mScreenCenter.Y * 2 Then Exit Function
+    
     IsPointVisible = True
+
+End Function
+
+Friend Function Follow(Target As tVec3, LookAtSpeed01 As Double, PositionSpeed01 As Double, MAXDist2 As Double, Optional MINDist2 As Double = 0)
+    Dim D         As Double
+
+
+    mLookAt = SUM3(MUL3(mLookAt, 1 - LookAtSpeed01), MUL3(Target, LookAtSpeed01))
+
+    D = Length32(DIFF3(mLookAt, mPosition))
+    If D > MAXDist2 Then
+        mPosition = SUM3(MUL3(mPosition, 1 - PositionSpeed01), MUL3(SUM3(Target, MUL3(camWW, -Sqr(MAXDist2))), PositionSpeed01))
+    ElseIf D < MINDist2 Then
+        mPosition = SUM3(MUL3(mPosition, 1 - PositionSpeed01), MUL3(SUM3(Target, MUL3(camWW, -Sqr(MINDist2))), PositionSpeed01))
+    End If
+
+    Update
 
 End Function
 

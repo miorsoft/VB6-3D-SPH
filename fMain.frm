@@ -179,7 +179,7 @@ Begin VB.Form fMain
       ScaleMode       =   3  'Pixel
       ScaleWidth      =   529
       TabIndex        =   0
-      ToolTipText     =   "Mouse Down and Move to change Point of View (Right click to Reset)"
+      ToolTipText     =   "Clcik and Move to Rotate Camera (Right click to Reset)"
       Top             =   120
       Width           =   7935
    End
@@ -348,10 +348,11 @@ Private Sub Form_Load()
     PIC.Width = WW
 
 
+
     PIChDC = PIC.hDC
 
     ScrollDRAW.Value = 2
-    txtNP.Text = 3000  '2000   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    txtNP.Text = 5000  '2000   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     txtMaxD.Text = 14    '25
 
 
@@ -391,7 +392,7 @@ Private Sub Form_Load()
 
     CAMERA.Init Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5 + WW * 0.7), _
                 Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5), _
-                Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5), Vec3(0, 1, 0)
+                Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5), Vec3(0, -1, 0)
 
 
 End Sub
@@ -502,7 +503,10 @@ Public Sub MainLoop()
     Next
 
     Do
-
+   
+'    CAMERA.Follow Vec3(pX(1), pY(1), pZ(1)), 0.03, 0.0125, 30000, 18000: RecomputeBOX = True
+'    CAMERA.Follow Vec3(COMx, COMy, COMz), 0.025, 0.0125, 80600, 40000: RecomputeBOX = True
+        
         SPH_MOVE
 
         SpatialGRID.ResetPoints
@@ -540,7 +544,7 @@ Public Sub MainLoop()
                     CAMERA.LineToScreen Vec3(0, HH * 1, 0), Vec3(0, HH * 1, ZZ * 1), LP1(12), LP2(12)
                     RecomputeBOX = False
                 End If
-                .SetSourceRGBA 0.5, 0.85, 0.5, 0.65   ' 0.35
+                .SetSourceRGBA 0.5, 0.85, 0.5, 0.5   ' 0.35
 
                 For L = 1 To 12
                     If LP1(L).Z > 0 And LP2(L).Z > 0 Then .MoveTo LP1(L).x, LP1(L).Y: .LineTo LP2(L).x, LP2(L).Y: .Stroke
@@ -623,7 +627,7 @@ Public Sub MainLoop()
                 .LineTo 30 + gX * 25 * InvGravScale, 30 + gY * 25 * InvGravScale
                 .Stroke
                 .Arc 30 + gX * 25 * InvGravScale, 30 + gY * 25 * InvGravScale, 15 * Abs(gZ) * InvGravScale
-                If gZ > 0 Then .Stroke Else: .Fill
+                If gZ > 0 Then .Fill Else: .Stroke
 
 
                 If COMGravity Then
@@ -656,12 +660,14 @@ Public Sub MainLoop()
                 gTOY = (Rnd * 2 - 1) * GravScale
                 gTOZ = (Rnd * 2 - 1) * GravScale * 1.1
 
+If Rnd > 0.1 Then
                 If Abs(gTOX) > Abs(gTOY) And Abs(gTOX) > Abs(gTOZ) Then gTOY = 0: gTOZ = 0
                 If Abs(gTOY) > Abs(gTOX) And Abs(gTOY) > Abs(gTOX) Then gTOX = 0: gTOZ = 0
                 If Abs(gTOZ) > Abs(gTOY) And Abs(gTOZ) > Abs(gTOX) Then gTOY = 0: gTOX = 0
 
-
                 If Rnd < 0.1 Then gTOX = 0: gTOY = 0: gTOZ = 0
+End If
+
             End If
 
             Line1.X1 = picGravity.Width * 0.5

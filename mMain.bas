@@ -97,6 +97,9 @@ Public RetNofPairs As Long
 
 Public CAMERA     As c3DEasyCam
 
+    Public COMx      As Double
+    Public COMy      As Double
+    Public COMz      As Double
 
 
 Public Sub SPH_InitConst()
@@ -117,7 +120,7 @@ Public Sub SPH_InitConst()
     kernelWeight = kernelWeight / I
 
     INVRestDensity = 1 / RestDensity
-    PressureLimit = 50    '45 '20
+    PressureLimit = 100 '50    '45 '20
 
     DT = 0.25
     invDT = 1 / DT
@@ -147,9 +150,7 @@ Public Sub SPH_MOVE()
     Const kFakeVel As Double = 0.005
 
 
-    Dim COMx      As Double
-    Dim COMy      As Double
-    Dim COMz      As Double
+
     Dim invNP     As Double
     Dim dx        As Double
     Dim DY        As Double
@@ -215,7 +216,14 @@ Public Sub SPH_MOVE()
     Next
 
 
-    If COMGravity Then
+'        invNP = 1 / NP
+'        COMx = COMx * invNP
+'        COMy = COMy * invNP
+'        COMz = COMz * invNP
+        
+        
+
+   If COMGravity Then
         invNP = 1 / NP
         COMx = COMx * invNP
         COMy = COMy * invNP
@@ -299,8 +307,8 @@ Public Sub SPH_ComputePAIRS()
         Pressure(I) = (Density(I) - RestDensity) * INVRestDensity
         If Pressure(I) > PressureLimit Then
             Pressure(I) = PressureLimit
-        ElseIf Pressure(I) < -0 Then
-            Pressure(I) = -0
+        ElseIf Pressure(I) < -PressureLimit Then
+            Pressure(I) = -PressureLimit
         End If
         'Reset Density
         '        Density(I) = 0!  'move to SPH_MOVE
