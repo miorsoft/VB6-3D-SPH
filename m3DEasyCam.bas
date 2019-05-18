@@ -15,8 +15,8 @@ Public Type tCamera
     camVV         As tVec3
     camWW         As tVec3
     VectorUP      As tVec3    'Vector UP
-    NearPlaneDist As Double
 
+    NearPlaneDist As Double
 End Type
 
 Public Camera     As tCamera  'Camera V4
@@ -78,21 +78,21 @@ Public Sub CameraSetRotation(ByVal Yaw As Double, ByVal Pitch As Double)
 
     ' Camera UP = Y
 
+    '    With Camera
+    '        D = Length3(DIFF3(.cFrom, .cTo))
+    '        .cFrom.X = .cTo.X + D * (Sin(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
+    '        .cFrom.Y = .cTo.Y + D * (Sin(Pitch * Deg2Rad))
+    '        .cFrom.Z = .cTo.Z + D * (Cos(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
+    '    End With
+
+    'cameraUP = Z
+
     With Camera
         D = Length3(DIFF3(.cFrom, .cTo))
         .cFrom.x = .cTo.x + D * (Sin(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
-        .cFrom.y = .cTo.y + D * (Sin(Pitch * Deg2Rad))
-        .cFrom.Z = .cTo.Z + D * (Cos(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
+        .cFrom.y = .cTo.y + D * (Cos(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
+        .cFrom.Z = .cTo.Z + D * (Sin(Pitch * Deg2Rad))
     End With
-
-    '    'cameraUP = Z
-    '
-    '    With Camera
-    '        D = Length3(DIFF3(.cFrom, .cTo))
-    '        .cFrom.x = .cTo.x + D * (Sin(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
-    '        .cFrom.y = .cTo.y + D * (Cos(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
-    '        .cFrom.Z = .cTo.Z + D * (Sin(Pitch * Deg2Rad))
-    '    End With
 
     CameraUpdate
 
@@ -105,15 +105,19 @@ Public Function PointToScreenWDCam(WorldPos As tVec3, ProjectedDistFromCam As Do
     S = WorldPos
 
     With Camera
+
         S = DIFF3(S, .cFrom)
+
         P.x = DOT3(S, .camUU)
         P.y = DOT3(S, .camVV)
         P.Z = DOT3(S, .camWW)
+
         IZ = 1 / P.Z
         PointToScreenWDCam.x = P.x * IZ * .ScreenCenter.x + .ScreenCenter.x
         PointToScreenWDCam.y = P.y * IZ * .ScreenCenter.x + .ScreenCenter.y
         PointToScreenWDCam.Z = IZ  ' if its negative point is behind camera
         ProjectedDistFromCam = P.Z  ' if its negative point is behind camera
+
     End With
 
 End Function
@@ -128,13 +132,17 @@ Public Sub PointToScreenCoords(ByVal x As Double, ByVal y As Double, ByVal Z As 
     S = Vec3(x, y, Z)
     With Camera
         S = DIFF3(S, .cFrom)
+
         P.x = DOT3(S, .camUU)
         P.y = DOT3(S, .camVV)
         P.Z = DOT3(S, .camWW)
+
         IZ = 1 / P.Z
+
         rX = P.x * IZ * .ScreenCenter.x + .ScreenCenter.x
         rY = P.y * IZ * .ScreenCenter.x + .ScreenCenter.y
         rZ = IZ  ' if its negative point is behind camera
+
     End With
 
 End Sub
@@ -161,9 +169,11 @@ Public Sub LineToScreen(P1 As tVec3, P2 As tVec3, Ret1 As tVec3, Ret2 As tVec3)
         IntersectP1 = RayPlaneIntersect(DIFF3(P2, P1), P1, PlaneNormal, PlaneCenter)
         Ret1 = PointToScreenWDCam(IntersectP1, DfromCam1)
 
+
     ElseIf DfromCam2 < Camera.NearPlaneDist Then
 
         If DfromCam1 < Camera.NearPlaneDist Then Exit Sub    'Both points behind camera so EXIT
+
 
         'Just P2 Behind, So Find it's intersection To Near plane
         PlaneNormal = Camera.camWW
@@ -180,7 +190,7 @@ End Sub
 
 Public Function IsPointVisible(x As Double, y As Double, Z As Double) As Boolean
 
-    If Z < 0 Then Exit Function    ' behind
+    If Z < 0 Then Exit Function
 
     If x < 0 Then Exit Function
     If y < 0 Then Exit Function

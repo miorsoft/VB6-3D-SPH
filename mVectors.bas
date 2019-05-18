@@ -17,7 +17,7 @@ Private Const INV30240 As Double = 3.30687830687831E-05
 Public Type tVec3
     x             As Double
     Y             As Double
-    Z             As Double
+    z             As Double
 End Type
 
 Public Function Atan2(ByVal x As Double, ByVal Y As Double) As Double
@@ -28,29 +28,29 @@ Public Function Atan2(ByVal x As Double, ByVal Y As Double) As Double
     End If
 End Function
 
-Public Function Vec3(x As Double, Y As Double, Z As Double) As tVec3
+Public Function Vec3(x As Double, Y As Double, z As Double) As tVec3
     Vec3.x = x
     Vec3.Y = Y
-    Vec3.Z = Z
+    Vec3.z = z
 End Function
 
 Public Function Length3(V As tVec3) As Double
     With V
-        Length3 = Sqr(.x * .x + .Y * .Y + .Z * .Z)
+        Length3 = Sqr(.x * .x + .Y * .Y + .z * .z)
     End With
 End Function
 Public Function Length32(V As tVec3) As Double
     With V
-        Length32 = .x * .x + .Y * .Y + .Z * .Z
+        Length32 = .x * .x + .Y * .Y + .z * .z
     End With
 End Function
 
 
 
-Public Function SUM3(v1 As tVec3, v2 As tVec3) As tVec3
-    SUM3.x = v1.x + v2.x
-    SUM3.Y = v1.Y + v2.Y
-    SUM3.Z = v1.Z + v2.Z
+Public Function SUM3(v1 As tVec3, V2 As tVec3) As tVec3
+    SUM3.x = v1.x + V2.x
+    SUM3.Y = v1.Y + V2.Y
+    SUM3.z = v1.z + V2.z
 End Function
 
 
@@ -58,12 +58,12 @@ End Function
 Public Function Normalize3(V As tVec3) As tVec3
     Dim D         As Double
 
-    D = (V.x * V.x + V.Y * V.Y + V.Z * V.Z)
+    D = (V.x * V.x + V.Y * V.Y + V.z * V.z)
     If D Then
         D = 1# / Sqr(D)
         Normalize3.x = V.x * D
         Normalize3.Y = V.Y * D
-        Normalize3.Z = V.Z * D
+        Normalize3.z = V.z * D
     End If
 
 End Function
@@ -71,38 +71,53 @@ End Function
 Public Function MUL3(V As tVec3, ByVal A As Double) As tVec3
     MUL3.x = V.x * A
     MUL3.Y = V.Y * A
-    MUL3.Z = V.Z * A
+    MUL3.z = V.z * A
 
 End Function
 
-Public Function DOT3(v1 As tVec3, v2 As tVec3) As Double
+Public Function DOT3(v1 As tVec3, V2 As tVec3) As Double
 
-    DOT3 = (v1.x * v2.x) + _
-           (v1.Y * v2.Y) + _
-           (v1.Z * v2.Z)
+    DOT3 = (v1.x * V2.x) + _
+           (v1.Y * V2.Y) + _
+           (v1.z * V2.z)
 
 End Function
 
 Public Function CROSS3(A As tVec3, B As tVec3) As tVec3
-    CROSS3.x = A.Y * B.Z - A.Z * B.Y
-    CROSS3.Y = A.Z * B.x - A.x * B.Z
-    CROSS3.Z = A.x * B.Y - A.Y * B.x
+    CROSS3.x = A.Y * B.z - A.z * B.Y
+    CROSS3.Y = A.z * B.x - A.x * B.z
+    CROSS3.z = A.x * B.Y - A.Y * B.x
 End Function
-Public Function DIFF3(v1 As tVec3, v2 As tVec3) As tVec3
-    DIFF3.x = v1.x - v2.x
-    DIFF3.Y = v1.Y - v2.Y
-    DIFF3.Z = v1.Z - v2.Z
+Public Function DIFF3(v1 As tVec3, V2 As tVec3) As tVec3
+    DIFF3.x = v1.x - V2.x
+    DIFF3.Y = v1.Y - V2.Y
+    DIFF3.z = v1.z - V2.z
 
 End Function
 
 
 Public Function Project3(V As tVec3, N As tVec3) As tVec3
-    Dim dot       As Double
+    Dim DOT       As Double
 
-    dot = DOT3(V, N)
-    Project3 = MUL3(N, dot)
+    DOT = DOT3(V, N)
+    Project3 = MUL3(N, DOT)
 
 End Function
+
+Public Function Rotate3(V As tVec3, XAxe As tVec3, YAxe As tVec3, ZAxe As tVec3) As tVec3
+    Rotate3.x = DOT3(V, XAxe)
+    Rotate3.Y = DOT3(V, YAxe)
+    Rotate3.z = DOT3(V, ZAxe)
+End Function
+
+Public Function Rotate3xz(V As tVec3, XAxe As tVec3) As tVec3
+
+    Rotate3xz.x = DOT3(V, XAxe)    'Parallel
+    Rotate3xz.Y = V.Y * 1
+    Rotate3xz.z = DOT3(V, Vec3(XAxe.z, 0, -XAxe.x))    'Perpendicular
+
+End Function
+
 
 
 

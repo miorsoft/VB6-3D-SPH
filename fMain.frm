@@ -248,6 +248,7 @@ End Sub
 
 
 
+
 Private Sub chkFaucet_Click(Index As Integer)
     If Index = 0 Then DoFaucet1 = chkFaucet(Index).Value = vbChecked
     If Index = 1 Then DoFaucet2 = chkFaucet(Index).Value = vbChecked
