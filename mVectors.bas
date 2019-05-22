@@ -39,6 +39,7 @@ Public Function Length3(V As tVec3) As Double
         Length3 = Sqr(.x * .x + .Y * .Y + .z * .z)
     End With
 End Function
+
 Public Function Length32(V As tVec3) As Double
     With V
         Length32 = .x * .x + .Y * .Y + .z * .z
@@ -88,11 +89,11 @@ Public Function CROSS3(A As tVec3, B As tVec3) As tVec3
     CROSS3.Y = A.z * B.x - A.x * B.z
     CROSS3.z = A.x * B.Y - A.Y * B.x
 End Function
+
 Public Function DIFF3(v1 As tVec3, V2 As tVec3) As tVec3
     DIFF3.x = v1.x - V2.x
     DIFF3.Y = v1.Y - V2.Y
     DIFF3.z = v1.z - V2.z
-
 End Function
 
 
@@ -104,17 +105,86 @@ Public Function Project3(V As tVec3, N As tVec3) As tVec3
 
 End Function
 
+
+
+
+
 Public Function Rotate3(V As tVec3, XAxe As tVec3, YAxe As tVec3, ZAxe As tVec3) As tVec3
+
+' TO TEST and ADJUST
+
     Rotate3.x = DOT3(V, XAxe)
     Rotate3.Y = DOT3(V, YAxe)
     Rotate3.z = DOT3(V, ZAxe)
+
 End Function
+
+''''******************************************************************
+''''   TODO:
+''''   http://paulbourke.net/geometry/rotate/
+''''   http://paulbourke.net/geometry/rotate/source.c
+''''******************************************************************
+'''Public Function Rotate3Axe(P As tVec3, Axe As tVec3, theta As Double) As tVec3
+'''    Dim L         As Double
+'''    Dim CosTheta  As Double
+'''    Dim SinTheta  As Double
+'''
+'''    'http://paulbourke.net/geometry/rotate/source.c
+'''
+'''    'Normalize AXE
+'''    L = Sqr(Axe.x * Axe.x + Axe.Y * Axe.Y + Axe.z * Axe.z)
+'''    If L <> 1 Then
+'''        L = 1 / L
+'''        Axe = MUL3(Axe, L)
+'''    End If
+'''
+'''
+''''       CosTheta = Cos(-theta)
+''''       SinTheta = Sin(-theta)
+'''
+'''    'TODO :    MUST TO FIND LEFT HAND RULES   .... seems to works for Y axe, steel to test
+'''    CosTheta = Cos(-theta)
+'''    SinTheta = -Sin(-theta)
+'''
+'''    With Rotate3Axe
+''''        .x = 0: .Y = 0: .z = 0
+'''        .x = .x + (CosTheta + (1 - CosTheta) * Axe.x * Axe.x) * P.x
+'''        .x = .x + ((1 - CosTheta) * Axe.x * Axe.Y - Axe.z * SinTheta) * P.Y
+'''        .x = .x + ((1 - CosTheta) * Axe.x * Axe.z + Axe.Y * SinTheta) * P.z
+'''
+'''        .Y = .Y + ((1 - CosTheta) * Axe.x * Axe.Y + Axe.z * SinTheta) * P.x
+'''        .Y = .Y + (CosTheta + (1 - CosTheta) * Axe.Y * Axe.Y) * P.Y
+'''        .Y = .Y + ((1 - CosTheta) * Axe.Y * Axe.z - Axe.x * SinTheta) * P.z
+'''
+'''        .z = .z + ((1 - CosTheta) * Axe.x * Axe.z - Axe.Y * SinTheta) * P.x
+'''        .z = .z + ((1 - CosTheta) * Axe.Y * Axe.z + Axe.x * SinTheta) * P.Y
+'''        .z = .z + (CosTheta + (1 - CosTheta) * Axe.z * Axe.z) * P.z
+'''
+'''    End With
+'''
+'''End Function
+
+
 
 Public Function Rotate3xz(V As tVec3, XAxe As tVec3) As tVec3
 
-    Rotate3xz.x = DOT3(V, XAxe)    'Parallel
+
+' POSITIVE Z = Left Side (front in POSITIVE X , Up Negative Y)
+
+'    Rotate3xz.x = DOT3(V, XAxe)    'Parallel
+'    Rotate3xz.Y = V.Y * 1
+'    Rotate3xz.z = DOT3(V, Vec3(XAxe.z, 0, -XAxe.x))    'Perpendicular clockwise
+'   This (up) is a change of coordinete system
+
+
+' POSITIVE Z = RIGHT Side (front in POSITIVE X , Up Negative Y)
+
+' Corrected ONE:
+'http://www.vbforums.com/showthread.php?874965-Rotation-using-DOT-product
+
+    Rotate3xz.x = DOT3(V, Vec3(XAxe.x, 0, -XAxe.z))
     Rotate3xz.Y = V.Y * 1
-    Rotate3xz.z = DOT3(V, Vec3(XAxe.z, 0, -XAxe.x))    'Perpendicular
+    Rotate3xz.z = DOT3(V, Vec3(XAxe.z, 0, XAxe.x))
 
 End Function
 

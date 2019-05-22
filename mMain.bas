@@ -127,7 +127,7 @@ Public Sub SPH_InitConst()
 
     KAttraction = 0.0128 * invDT
     KPressure = kernelWeight * 0.08 * invDT
-    KViscosity = 0.018
+    KViscosity = 0.018 * 0.75
 
     ReDim VXChange(NP)
     ReDim VYChange(NP)
@@ -285,6 +285,7 @@ Public Sub SPH_ComputePAIRS()
     Dim vDZ       As Double
 
     Dim OmR       As Double
+
 
 
 

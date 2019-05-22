@@ -16,9 +16,11 @@ Attribute VB_Exposed = False
 ' 3D CAMERA by
 ' reexre - miorsoft - Roberto Mior
 
-' WORKS ONLY with VectorUP = 0, -1 , 0
+' WORKS ONLY with mVectorUP = 0, -1 , 0
 
 ' LEFT HAND RULES
+' https://upload.wikimedia.org/wikipedia/commons/b/b2/3D_Cartesian_Coodinate_Handedness.jpg
+
 
 
 Option Explicit
@@ -33,7 +35,7 @@ Private mScreenCenter As tVec3    'Center coords of screen
 Private camUU     As tVec3    'Cam Matrix
 Private camVV     As tVec3
 Private camWW     As tVec3
-Private VectorUP  As tVec3    'Vector UP
+Private mVectorUP As tVec3    'Vector UP
 Private NearPlaneDist As Double
 
 Private mPitch    As Double
@@ -59,15 +61,26 @@ Friend Property Get lookat() As tVec3
     lookat = mLookAt
 End Property
 
-Friend Property Get Direction() As tVec3
-    Direction = camWW
-End Property
-
 Friend Sub SetPositionAndLookAt(Pos As tVec3, Look As tVec3)
     mPosition = Pos
     mLookAt = Look
     Update
 End Sub
+
+Friend Property Get Direction() As tVec3
+    Direction = camWW
+End Property
+
+
+Friend Property Let VectorUP(UP As tVec3)
+    mVectorUP = Normalize3(UP)
+    Update
+End Property
+
+Friend Property Get VectorUP() As tVec3
+    VectorUP = mVectorUP
+End Property
+
 
 Friend Sub GetRotation(ByRef Yaw As Double, ByRef Pitch As Double)
     Update True
@@ -89,7 +102,7 @@ Friend Sub Init(CameraFrom As tVec3, CameraTo As tVec3, ScreenCenter As tVec3, U
     mPosition = CameraFrom
     mLookAt = CameraTo
     mScreenCenter = ScreenCenter
-    VectorUP = UP
+    mVectorUP = UP
 
     NearPlaneDist = 5
 
@@ -105,11 +118,11 @@ Private Sub Update(Optional UpdatePitchYawValues As Boolean = False)
     Dim D         As tVec3
 
     camWW = Normalize3(DIFF3(mLookAt, mPosition))
-    camUU = Normalize3(CROSS3(VectorUP, camWW))
+    camUU = Normalize3(CROSS3(mVectorUP, camWW))
     camVV = Normalize3(CROSS3(camUU, camWW))
 
     If UpdatePitchYawValues Then    '  (GetRotation)
-        ' ############    CAMERA vectorUP  MUST BE 0,-1,0
+        ' ############    CAMERA mVectorUP  MUST BE 0,-1,0
         'https://math.stackexchange.com/questions/470112/calculate-camera-pitch-yaw-to-face-point
         'D = DIFF3(Position, lookat)
         D = camWW    'opposite sign than above
@@ -121,6 +134,15 @@ Private Sub Update(Optional UpdatePitchYawValues As Boolean = False)
 
 End Sub
 
+
+
+'******************************************************************
+'   TODO:
+'   http://paulbourke.net/geometry/rotate/
+'   http://paulbourke.net/geometry/rotate/source.c
+'******************************************************************
+
+
 Public Sub SetRotation(ByVal Yaw As Double, ByVal Pitch As Double)
 
     Dim D         As Double
@@ -128,7 +150,7 @@ Public Sub SetRotation(ByVal Yaw As Double, ByVal Pitch As Double)
     ' http://www.vbforums.com/showthread.php?870755-3D-Swimming-Fish-Algorithm&p=5356667&viewfull=1#post5356667
 
 
-    ' ############    CAMERA vectorUP MUST BE 0,-1,0
+    ' ############    CAMERA mVectorUP MUST BE 0,-1,0
     D = Length3(DIFF3(mPosition, mLookAt))
     mPosition.x = mLookAt.x + D * (Sin(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
     mPosition.Y = mLookAt.Y + D * (Sin(Pitch * Deg2Rad))
@@ -159,7 +181,7 @@ Friend Function PointToScreenWDCam(WorldPos As tVec3, ProjectedDistFromCam As Do
     IZ = 1 / P.z * mZOOM
     PointToScreenWDCam.x = P.x * IZ * mScreenCenter.x + mScreenCenter.x
     PointToScreenWDCam.Y = P.Y * IZ * mScreenCenter.x + mScreenCenter.Y
-    PointToScreenWDCam.z = IZ ' if its negative point is behind camera
+    PointToScreenWDCam.z = IZ    ' if its negative point is behind camera
     ProjectedDistFromCam = P.z  ' if its negative point is behind camera
 
 End Function
@@ -178,7 +200,7 @@ Friend Sub PointToScreenCoords(ByVal x As Double, ByVal Y As Double, ByVal z As 
     IZ = 1 / P.z * mZOOM
     rX = P.x * IZ * mScreenCenter.x + mScreenCenter.x
     rY = P.Y * IZ * mScreenCenter.x + mScreenCenter.Y
-    rZ = IZ ' if its negative point is behind camera
+    rZ = IZ    ' if its negative point is behind camera
 
 End Sub
 

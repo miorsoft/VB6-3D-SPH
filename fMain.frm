@@ -427,7 +427,7 @@ Public Sub MainLoop()
 
     Dim x         As Double
     Dim Y         As Double
-    Dim Z         As Double
+    Dim z         As Double
 
     Dim DrawOrderIDX() As Long
     Dim DistFromCamera() As Double
@@ -437,6 +437,7 @@ Public Sub MainLoop()
 
     Dim DC        As Double
     Dim L         As Long
+Dim tV As tVec3
 
 
     ' V5 BOX
@@ -476,7 +477,9 @@ Public Sub MainLoop()
 
 
 
-
+gX = 0
+gY = 1
+gZ = 0
 
 
 
@@ -548,7 +551,7 @@ Public Sub MainLoop()
                 .SetSourceRGBA 0.5, 0.85, 0.5, 0.5   ' 0.35
 
                 For L = 1 To 12
-                    If LP1(L).Z > 0 And LP2(L).Z > 0 Then .MoveTo LP1(L).x, LP1(L).Y: .LineTo LP2(L).x, LP2(L).Y: .Stroke
+                    If LP1(L).z > 0 And LP2(L).z > 0 Then .MoveTo LP1(L).x, LP1(L).Y: .LineTo LP2(L).x, LP2(L).Y: .Stroke
                 Next
                 ' END DRAW BOX--------------------------------------------
 
@@ -581,8 +584,8 @@ Public Sub MainLoop()
                     'V = Pressure(J) * 0.075
                     V = Pressure(J) * 0.15   'V5
 
-                    CAMERA.PointToScreenCoords pX(J), pY(J), pZ(J), x, Y, Z
-                    If Z > 0 Then
+                    CAMERA.PointToScreenCoords pX(J), pY(J), pZ(J), x, Y, z
+                    If z > 0 Then
                     'If CAMERA.IsPointVisible(x, Y, Z) Then
 
                         ' V = V + Z * 50 - 0.2
@@ -592,15 +595,21 @@ Public Sub MainLoop()
                             '                      .SetSourceRGBA 0.02 + V, 0.5 + V, 0.6 + V, 0.85   '(V 3 )
 
                             '.SetSourceRGBA 0.01 + V, 0.45 + V, 0.55 + V, 0.8    '0.7  '(V 4)
-                            .SetSourceRGBA 0.015 + V, 0.5 + V, 0.6 + V, 0.8  '0.7  '(V 5)
-
+                            
+                            '.SetSourceRGBA 0.015 + V, 0.5 + V, 0.6 + V, 0.8  '0.7  '(V 5)
+                            
+.SetSourceRGBA 0.015 + V, 0.5 + V, 0.6 + V, 0.95
+                            
                         Else
                             '.SetSourceRGBA 0.2 + V, 0.7 + V, 0.2 + V, 0.7
-                            .SetSourceRGBA 0.15 + V, 0.6 + V, 0.15 + V, 0.8
+                            
+                           ' .SetSourceRGBA 0.15 + V, 0.6 + V, 0.15 + V, 0.8
+ .SetSourceRGBA 0.1 + V, 0.5 + V, 0.1 + V, 0.95
+                         
                         End If
 
                         '.Arc X, Y, 0.7! + DrawR * Z * 340! '(V3)
-                        .Arc x, Y, 0.7 + DrawR * Z * 450!  'V4
+                        .Arc x, Y, 0.7 + DrawR * z * 450!  'V4
 
                         .Fill
                     End If
@@ -685,6 +694,16 @@ End If
         gZ = gZ * 0.98 + gTOZ * 0.02
 
 
+''CameraMoveWithGravity
+''CAMERA.Position = SUM3(CAMERA.lookat, MUL3(Normalize3(Vec3(gZ, -Abs(gX), gY)), 680))
+'tV = SUM3(MUL3(DIFF3(CAMERA.Position, CAMERA.lookat), 0.95), MUL3(Normalize3(Vec3(gZ, -Abs(gX), gY)), 0.05 * 610))
+'CAMERA.Position = SUM3(CAMERA.lookat, tV)
+''CAMERA.VectorUP = SUM3(MUL3(CAMERA.VectorUP, 0.5), MUL3(Vec3(-gX, -gY, -gZ), 0.5)): RecomputeBOX = True
+'CAMERA.VectorUP = Vec3(-gX, -gY, -gZ): RecomputeBOX = True
+
+
+
+
         If DoFaucet1 Then FaucetSource (1)
         If DoFaucet2 Then FaucetSource (2)
 
@@ -694,7 +713,7 @@ End If
             OnP = Format$(RetNofPairs, "###,###,###")
         End If
 
-        DoEvents
+        FauxDoEvents
 
     Loop While DoLOOP
 
@@ -875,9 +894,9 @@ Private Sub Form_Unload(Cancel As Integer)
 End Sub
 
 
-Private Sub OLDPointToScreen(ByVal x As Double, ByVal Y As Double, ByVal Z As Double, _
+Private Sub OLDPointToScreen(ByVal x As Double, ByVal Y As Double, ByVal z As Double, _
                              rX As Double, rY As Double, rZ As Double)
-    rZ = 0.5 + 0.5 * Z * invZZ
+    rZ = 0.5 + 0.5 * z * invZZ
     rX = WW * 0.5 + (x - WW * 0.5) * 0.9 * rZ
     rY = HH * 0.5 + (Y - HH * 0.5) * 0.9 * rZ
 End Sub

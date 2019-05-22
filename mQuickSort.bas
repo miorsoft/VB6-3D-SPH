@@ -9,7 +9,8 @@ Public Sub QuicksortSingle(List() As Double, ByVal min As Long, ByVal max As Lon
     Dim lo        As Long
     Dim I         As Long
     If max <= min Then Exit Sub
-    I = Int((max - min + 1) * Rnd + min)
+    'I = Int((max - min + 1) * Rnd + min)
+    I = (max + min) \ 2
     med_value = List(I)
     List(I) = List(min)
     lo = min
@@ -52,7 +53,9 @@ Public Sub QuickSortSingle2(Dist() As Double, OtherInfo() As Long, ByVal min As 
     Dim lo        As Long
     Dim I         As Long
     If max <= min Then Exit Sub
-    I = Int((max - min + 1) * Rnd + min)
+    'I = Int((max - min + 1) * Rnd + min)
+     I = (max + min) \ 2
+   
     med_value = Dist(I)
     med_OtherInfo = OtherInfo(I)
 
