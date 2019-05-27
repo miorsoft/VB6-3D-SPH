@@ -393,7 +393,7 @@ Private Sub Form_Load()
 
     CAMERA.Init Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5 + WW * 0.7), _
                 Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5), _
-                Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5), Vec3(0, -1, 0)
+                Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5), Vec3(0, 1, 0)
 
 
 End Sub
@@ -425,9 +425,9 @@ Public Sub MainLoop()
     Dim V         As Double
     Dim OnP       As String
 
-    Dim x         As Double
+    Dim X         As Double
     Dim Y         As Double
-    Dim z         As Double
+    Dim Z         As Double
 
     Dim DrawOrderIDX() As Long
     Dim DistFromCamera() As Double
@@ -478,7 +478,7 @@ Dim tV As tVec3
 
 
 gX = 0
-gY = 1
+gY = -1
 gZ = 0
 
 
@@ -551,7 +551,7 @@ gZ = 0
                 .SetSourceRGBA 0.5, 0.85, 0.5, 0.5   ' 0.35
 
                 For L = 1 To 12
-                    If LP1(L).z > 0 And LP2(L).z > 0 Then .MoveTo LP1(L).x, LP1(L).Y: .LineTo LP2(L).x, LP2(L).Y: .Stroke
+                    If LP1(L).Z > 0 And LP2(L).Z > 0 Then .MoveTo LP1(L).X, LP1(L).Y: .LineTo LP2(L).X, LP2(L).Y: .Stroke
                 Next
                 ' END DRAW BOX--------------------------------------------
 
@@ -584,8 +584,8 @@ gZ = 0
                     'V = Pressure(J) * 0.075
                     V = Pressure(J) * 0.15   'V5
 
-                    CAMERA.PointToScreenCoords pX(J), pY(J), pZ(J), x, Y, z
-                    If z > 0 Then
+                    CAMERA.PointToScreenCoords pX(J), pY(J), pZ(J), X, Y, Z
+                    If Z > 0 Then
                     'If CAMERA.IsPointVisible(x, Y, Z) Then
 
                         ' V = V + Z * 50 - 0.2
@@ -609,7 +609,7 @@ gZ = 0
                         End If
 
                         '.Arc X, Y, 0.7! + DrawR * Z * 340! '(V3)
-                        .Arc x, Y, 0.7 + DrawR * z * 450!  'V4
+                        .Arc X, Y, 0.7 + DrawR * Z * 450!  'V4
 
                         .Fill
                     End If
@@ -634,9 +634,9 @@ gZ = 0
                 .Arc 30, 30, 25
                 .Stroke
                 .MoveTo 30, 30
-                .LineTo 30 + gX * 25 * InvGravScale, 30 + gY * 25 * InvGravScale
+                .LineTo 30 + gX * 25 * InvGravScale, 30 - gY * 25 * InvGravScale
                 .Stroke
-                .Arc 30 + gX * 25 * InvGravScale, 30 + gY * 25 * InvGravScale, 15 * Abs(gZ) * InvGravScale
+                .Arc 30 + gX * 25 * InvGravScale, 30 - gY * 25 * InvGravScale, 15 * Abs(gZ) * InvGravScale
                 If gZ > 0 Then .Fill Else: .Stroke
 
 
@@ -683,7 +683,7 @@ End If
             Line1.X1 = picGravity.Width * 0.5
             Line1.Y1 = picGravity.Height * 0.5
             Line1.X2 = Line1.X1 + gTOX * picGravity.Width * 0.5 * InvGravScale
-            Line1.Y2 = Line1.Y1 + gTOY * picGravity.Height * 0.5 * InvGravScale
+            Line1.Y2 = Line1.Y1 - gTOY * picGravity.Height * 0.5 * InvGravScale
 
         End If
 
@@ -694,12 +694,12 @@ End If
         gZ = gZ * 0.98 + gTOZ * 0.02
 
 
-''CameraMoveWithGravity
-''CAMERA.Position = SUM3(CAMERA.lookat, MUL3(Normalize3(Vec3(gZ, -Abs(gX), gY)), 680))
-'tV = SUM3(MUL3(DIFF3(CAMERA.Position, CAMERA.lookat), 0.95), MUL3(Normalize3(Vec3(gZ, -Abs(gX), gY)), 0.05 * 610))
-'CAMERA.Position = SUM3(CAMERA.lookat, tV)
-''CAMERA.VectorUP = SUM3(MUL3(CAMERA.VectorUP, 0.5), MUL3(Vec3(-gX, -gY, -gZ), 0.5)): RecomputeBOX = True
-'CAMERA.VectorUP = Vec3(-gX, -gY, -gZ): RecomputeBOX = True
+''''CameraMoveWithGravity
+'''CAMERA.Position = SUM3(CAMERA.lookat, MUL3(Normalize3(Vec3(gZ, -Abs(gX), gY)), 680))
+''tV = SUM3(MUL3(DIFF3(CAMERA.Position, CAMERA.lookat), 0.95), MUL3(Normalize3(Vec3(gZ, -Abs(gX), gY)), 0.05 * 610))
+''CAMERA.Position = SUM3(CAMERA.lookat, tV)
+'''CAMERA.VectorUP = SUM3(MUL3(CAMERA.VectorUP, 0.5), MUL3(Vec3(-gX, -gY, -gZ), 0.5)): RecomputeBOX = True
+''CAMERA.VectorUP = Vec3(-gX, -gY, -gZ): RecomputeBOX = True
 
 
 
@@ -724,7 +724,7 @@ End Sub
 
 
 
-Private Sub PIC_MouseDown(Button As Integer, Shift As Integer, x As Single, Y As Single)
+Private Sub PIC_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Button = 2 Then
 
         CAMERA.SetRotation 0, 0
@@ -736,7 +736,7 @@ Private Sub PIC_MouseDown(Button As Integer, Shift As Integer, x As Single, Y As
 
 End Sub
 
-Private Sub PIC_MouseMove(Button As Integer, Shift As Integer, x As Single, Y As Single)
+Private Sub PIC_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
     Dim D         As Double
     Dim Pitch     As Double
     Dim Yaw       As Double
@@ -744,19 +744,24 @@ Private Sub PIC_MouseMove(Button As Integer, Shift As Integer, x As Single, Y As
 
     Static x0!, y0!, dx!, DY!
 
-    dx = x - x0: DY = Y - y0
+    dx = X - x0: DY = Y - y0
 
 
     Select Case Button
     Case 0
-        x0 = x: y0 = Y
+        x0 = X: y0 = Y
     Case 1
 
         CAMERA.GetRotation Yaw, Pitch
 
-        Pitch = Pitch - 0.25 * DY
-        Yaw = (Yaw - 0.25 * dx)    ' Mod 360
-        x0 = x: y0 = Y
+        'Left hand
+'        Pitch = Pitch - 0.25 * DY
+'        Yaw = (Yaw - 0.25 * dx)
+'        Right Hand
+        Pitch = Pitch + 0.25 * DY
+        Yaw = (Yaw - 0.25 * dx)
+        
+        x0 = X: y0 = Y
         '        If Pitch > 90 Then Pitch = 90
         '        If Pitch < -90 Then Pitch = -90
         CAMERA.SetRotation Yaw, Pitch
@@ -778,18 +783,18 @@ Private Sub PIC_MouseMove(Button As Integer, Shift As Integer, x As Single, Y As
 
 End Sub
 
-Private Sub picGravity_MouseDown(Button As Integer, Shift As Integer, x As Single, Y As Single)
+Private Sub picGravity_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Button = 1 Then
 
-        x = (x \ 5) * 5
+        X = (X \ 5) * 5
         Y = (Y \ 5) * 5
 
-        gTOX = 2 * (x - picGravity.Width * 0.5) / picGravity.Width * GravScale
-        gTOY = 2 * (Y - picGravity.Height * 0.5) / picGravity.Height * GravScale
+        gTOX = 2 * (X - picGravity.Width * 0.5) / picGravity.Width * GravScale
+        gTOY = -2 * (Y - picGravity.Height * 0.5) / picGravity.Height * GravScale
 
         Line1.X1 = picGravity.Width * 0.5
         Line1.Y1 = picGravity.Height * 0.5
-        Line1.X2 = x
+        Line1.X2 = X
         Line1.Y2 = Y
 
     ElseIf Button = 2 Then
@@ -825,16 +830,16 @@ End Sub
 
 
 Private Sub FaucetSource(fPhase As Long)
-    Dim A         As Double
+    Dim a         As Double
     Dim C         As Double
     Dim S         As Double
-    Dim x         As Double
+    Dim X         As Double
     Dim Y         As Double
     Dim L         As Double
     Dim sX        As Double
     Dim sY        As Double
 
-    A = (CNT * 0.0125)
+    a = (CNT * 0.0125)
 
 
     If fPhase = 1 Then
@@ -843,14 +848,14 @@ Private Sub FaucetSource(fPhase As Long)
     Else
         sX = WW * 2 / 3
         sY = HH * 1 / 3
-        A = -A    '+ 3.14159265358979 '* 0.5
+        a = -a    '+ 3.14159265358979 '* 0.5
     End If
 
-    C = Cos(A)
-    S = Sin(A)
+    C = Cos(a)
+    S = Sin(a)
 
     For L = -H * 1 To H * 1 Step H * 0.25
-        x = sX + C * L
+        X = sX + C * L
         Y = sY + S * L
         NP = NP + 1
 
@@ -871,7 +876,7 @@ Private Sub FaucetSource(fPhase As Long)
         ReDim Preserve Pressure(NP)
         ReDim Preserve Phase(NP)
 
-        pX(NP) = x
+        pX(NP) = X
         pY(NP) = Y
         pZ(NP) = ZZ * 0.5
 
@@ -894,10 +899,10 @@ Private Sub Form_Unload(Cancel As Integer)
 End Sub
 
 
-Private Sub OLDPointToScreen(ByVal x As Double, ByVal Y As Double, ByVal z As Double, _
+Private Sub OLDPointToScreen(ByVal X As Double, ByVal Y As Double, ByVal Z As Double, _
                              rX As Double, rY As Double, rZ As Double)
-    rZ = 0.5 + 0.5 * z * invZZ
-    rX = WW * 0.5 + (x - WW * 0.5) * 0.9 * rZ
+    rZ = 0.5 + 0.5 * Z * invZZ
+    rX = WW * 0.5 + (X - WW * 0.5) * 0.9 * rZ
     rY = HH * 0.5 + (Y - HH * 0.5) * 0.9 * rZ
 End Sub
 

@@ -11,7 +11,6 @@ Private Const QS_SENDMESSAGE As Long = &H40
 
 Private Const EveryThingsOR As Long = 77 + 2    'reexre
 
-
 Public Sub FauxDoEvents()
 ' pulled from this posting
 ' http://www.vbforums.com/showthread.php?315416-Ok-noobies-fauxdoevents-is-slow!!!-Here-s-are-faster-methods

@@ -147,14 +147,14 @@ End Sub
 
 Friend Sub ResetPoints()
 
-    Dim x         As Long
+    Dim X         As Long
     Dim Y         As Long
     Dim Z         As Long
 
-    For x = 0 To CellW
+    For X = 0 To CellW
         For Y = 0 To CellH
             For Z = 0 To cellZ
-                CELL(x, Y, Z).NP = 0&
+                CELL(X, Y, Z).NP = 0&
             Next
         Next
     Next
@@ -163,7 +163,7 @@ Friend Sub ResetPoints()
 
 End Sub
 
-Friend Sub InsertPoint(ByVal x As Double, ByVal Y As Double, ByVal Z As Double)
+Friend Sub InsertPoint(ByVal X As Double, ByVal Y As Double, ByVal Z As Double)
     NP = NP + 1
     If NP > MaxNP Then
         MaxNP = NP * 2
@@ -172,20 +172,20 @@ Friend Sub InsertPoint(ByVal x As Double, ByVal Y As Double, ByVal Z As Double)
         ReDim Preserve pZ(MaxNP)
 
     End If
-    pX(NP) = x
+    pX(NP) = X
     pY(NP) = Y
     pY(NP) = Z
 
-    pvAddToCell x \ GridSize, Y \ GridSize, Z \ GridSize, NP
+    pvAddToCell X \ GridSize, Y \ GridSize, Z \ GridSize, NP
 
 End Sub
 
-Friend Sub InsertALLpoints(x() As Double, Y() As Double, Z() As Double)
+Friend Sub InsertALLpoints(X() As Double, Y() As Double, Z() As Double)
 'Remember to Call ResetPoints First
 
     Dim I         As Long
     Dim U         As Long
-    U = UBound(x)
+    U = UBound(X)
 
     For I = 1 To U
         NP = NP + 1
@@ -196,9 +196,9 @@ Friend Sub InsertALLpoints(x() As Double, Y() As Double, Z() As Double)
         End If
         '        PX(NP) = X(I)
         '        PY(NP) = Y(I)
-        pvAddToCell x(I) \ GridSize, Y(I) \ GridSize, Z(I) \ GridSize, NP
+        pvAddToCell X(I) \ GridSize, Y(I) \ GridSize, Z(I) \ GridSize, NP
     Next
-    pvArrCopySingle pX, x
+    pvArrCopySingle pX, X
     pvArrCopySingle pY, Y
     pvArrCopySingle pZ, Z
 
@@ -225,7 +225,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
 
 'CORE SUB
 
-    Dim x         As Long
+    Dim X         As Long
     Dim Y         As Long
     Dim Z         As Long
 
@@ -263,9 +263,9 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
 
     Npairs = 0&
 
-    For x = 0& To CellW
-        Xp1 = x + 1&
-        Xm1 = x - 1&
+    For X = 0& To CellW
+        Xp1 = X + 1&
+        Xm1 = X - 1&
 
         For Y = 0& To CellH
             Yp1 = Y + 1&
@@ -275,7 +275,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                 Zp1 = Z + 1&
                 Zm1 = Z - 1&
 
-                With CELL(x, Y, Z)
+                With CELL(X, Y, Z)
 
                     For I = 1& To .NP    '- 1& ' Should be -1 to do only SELF but so we can do even others
 
@@ -486,8 +486,8 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
 
                         End If
                         If Yp1 <= CellH Then
-                            For J = 1& To CELL(x, Yp1, Z).NP    ' . Y .
-                                iJ = CELL(x, Yp1, Z).pIDX(J)
+                            For J = 1& To CELL(X, Yp1, Z).NP    ' . Y .
+                                iJ = CELL(X, Yp1, Z).pIDX(J)
                                 dx = pX(iJ) - PXI
                                 DY = pY(iJ) - PYI
                                 dz = pZ(iJ) - PZI
@@ -531,8 +531,8 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
 
 
                             '                                                              X + 0
-                            For J = 1& To CELL(x, Y, Zp1).NP    ' . . Z
-                                iJ = CELL(x, Y, Zp1).pIDX(J)
+                            For J = 1& To CELL(X, Y, Zp1).NP    ' . . Z
+                                iJ = CELL(X, Y, Zp1).pIDX(J)
                                 dx = pX(iJ) - PXI
                                 DY = pY(iJ) - PYI
                                 dz = pZ(iJ) - PZI
@@ -540,8 +540,8 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                                 If D < MaxDistance2 Then pvAddPairWDist iI, iJ, dx, DY, dz, D
                             Next
                             If Yp1 <= CellH Then
-                                For J = 1& To CELL(x, Yp1, Zp1).NP    ' . Y Z
-                                    iJ = CELL(x, Yp1, Zp1).pIDX(J)
+                                For J = 1& To CELL(X, Yp1, Zp1).NP    ' . Y Z
+                                    iJ = CELL(X, Yp1, Zp1).pIDX(J)
                                     dx = pX(iJ) - PXI
                                     DY = pY(iJ) - PYI
                                     dz = pZ(iJ) - PZI
@@ -550,8 +550,8 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                                 Next
                             End If
                             If Ym1 >= 0 Then
-                                For J = 1& To CELL(x, Ym1, Zp1).NP    ' . -Y Z
-                                    iJ = CELL(x, Ym1, Zp1).pIDX(J)
+                                For J = 1& To CELL(X, Ym1, Zp1).NP    ' . -Y Z
+                                    iJ = CELL(X, Ym1, Zp1).pIDX(J)
                                     dx = pX(iJ) - PXI
                                     DY = pY(iJ) - PYI
                                     dz = pZ(iJ) - PZI
@@ -602,7 +602,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
 
             Next Z
         Next Y
-    Next x
+    Next X
 
 
 
