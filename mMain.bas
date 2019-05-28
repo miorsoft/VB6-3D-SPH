@@ -97,30 +97,30 @@ Public RetNofPairs As Long
 
 Public CAMERA     As c3DEasyCam
 
-    Public COMx      As Double
-    Public COMy      As Double
-    Public COMz      As Double
+Public COMx       As Double
+Public COMy       As Double
+Public COMz       As Double
 
 
 Public Sub SPH_InitConst()
-    Dim r         As Double
+    Dim R         As Double
     Dim kernelWeight As Double
     Dim I         As Double
 
-    r = 0.33333333333
+    R = 0.33333333333
     '    RestDensity = SmoothKernel_3(r) * 6    ' 2D
 
-    RestDensity = SmoothKernel_3(r) * 6    ' 3D
+    RestDensity = SmoothKernel_3(R) * 6    ' 3D
 
 
-    For r = 0 To 1 Step 0.01
+    For R = 0 To 1 Step 0.01
         I = I + 1
-        kernelWeight = kernelWeight + SmoothKernel_3(r)
+        kernelWeight = kernelWeight + SmoothKernel_3(R)
     Next
     kernelWeight = kernelWeight / I
 
     INVRestDensity = 1 / RestDensity
-    PressureLimit = 100 '50    '45 '20
+    PressureLimit = 100    '50    '45 '20
 
     DT = 0.25
     invDT = 1 / DT
@@ -216,14 +216,14 @@ Public Sub SPH_MOVE()
     Next
 
 
-'        invNP = 1 / NP
-'        COMx = COMx * invNP
-'        COMy = COMy * invNP
-'        COMz = COMz * invNP
-        
-        
+    '        invNP = 1 / NP
+    '        COMx = COMx * invNP
+    '        COMy = COMy * invNP
+    '        COMz = COMz * invNP
 
-   If COMGravity Then
+
+
+    If COMGravity Then
         invNP = 1 / NP
         COMx = COMx * invNP
         COMy = COMy * invNP
@@ -262,7 +262,7 @@ Public Sub SPH_ComputePAIRS()
     Dim NormalizedDZ As Double
 
     Dim InvD      As Double
-    Dim r         As Double
+    Dim R         As Double
     Dim Smooth    As Double
     Dim VXcI      As Double
     Dim VYcI      As Double
@@ -297,8 +297,8 @@ Public Sub SPH_ComputePAIRS()
         If D Then
             I = P1(pair)
             J = P2(pair)
-            r = D * invH
-            Smooth = SmoothKernel_3(r)
+            R = D * invH
+            Smooth = SmoothKernel_3(R)
             Density(I) = Density(I) + Smooth
             Density(J) = Density(J) + Smooth
         End If
@@ -341,8 +341,8 @@ Public Sub SPH_ComputePAIRS()
 
         If D Then
 
-            r = D * invH    ' the distance between particles in range 0-1
-            OmR = 1! - r
+            R = D * invH    ' the distance between particles in range 0-1
+            OmR = 1! - R
 
             InvD = 1! / D
             NormalizedDX = dx * InvD
@@ -376,7 +376,7 @@ Public Sub SPH_ComputePAIRS()
                 VYcJ = VYcJ - iY
                 VZcJ = VZcJ - IZ
 
-                Smooth = SmoothKernel_3(r)
+                Smooth = SmoothKernel_3(R)
 
 
                 ' <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  PRESSURE
@@ -422,7 +422,7 @@ Public Sub SPH_ComputePAIRS()
                 vDY = vY(J) - vY(I)
                 vDZ = vZ(J) - vZ(I)
 
-                K = -0.5 * r * r * r + r * r + 0.5 * InvD * H - 1!
+                K = -0.5 * R * R * R + R * R + 0.5 * InvD * H - 1!
                 K = K * KViscosity
 
                 ' MODE 2 -----------<<<<<<< difference from above
@@ -492,23 +492,23 @@ End Sub
 
 
 
-Private Function SmoothKernel_1(ByVal r As Double) As Double
-    SmoothKernel_1 = 1! - r * r * (3! - 2! * r)
+Private Function SmoothKernel_1(ByVal R As Double) As Double
+    SmoothKernel_1 = 1! - R * R * (3! - 2! * R)
 End Function
 
-Private Function SmoothKernel_2(ByVal r As Double) As Double
+Private Function SmoothKernel_2(ByVal R As Double) As Double
 'A new kernel function for SPH with applications to free surfaceflowsqX.F. Yanga, S.L. Pengb, M.B. Liu
-    SmoothKernel_2 = (4! * Cos(PI * r) + Cos(PI2 * r) + 3!) * 0.125
+    SmoothKernel_2 = (4! * Cos(PI * R) + Cos(PI2 * R) + 3!) * 0.125
 End Function
 
-Public Function SmoothKernel_3(ByVal r As Double) As Double
+Public Function SmoothKernel_3(ByVal R As Double) As Double
 'http://www.astro.lu.se/~david/teaching/SPH/notes/annurev.aa.30.090192.pdf
-    r = r * 2!
-    If r <= 1! Then
-        SmoothKernel_3 = 1! - 1.5 * r * r + 0.75 * r * r * r
+    R = R * 2!
+    If R <= 1! Then
+        SmoothKernel_3 = 1! - 1.5 * R * R + 0.75 * R * R * R
     Else
-        r = 2! - r
-        SmoothKernel_3 = 0.25 * r * r * r
+        R = 2! - R
+        SmoothKernel_3 = 0.25 * R * R * R
     End If
 End Function
 

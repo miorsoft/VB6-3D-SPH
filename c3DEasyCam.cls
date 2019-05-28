@@ -36,15 +36,17 @@ Private camUU     As tVec3    'Cam Matrix
 Private camVV     As tVec3
 Private camWW     As tVec3
 Private mVectorUP As tVec3    'Vector UP
-Private NearPlaneDist As Double
+Private mNearPlaneDist As Double
+Private mFarPlaneDist As Double
+
 
 Private mPitch    As Double
 Private mYaw      As Double
 Private mZOOM     As Double
 
 
-Friend Property Let Position(V As tVec3)
-    mPosition = V
+Friend Property Let Position(v As tVec3)
+    mPosition = v
     Update
 End Property
 
@@ -52,8 +54,8 @@ Friend Property Get Position() As tVec3
     Position = mPosition
 End Property
 
-Friend Property Let lookat(V As tVec3)
-    mLookAt = V
+Friend Property Let lookat(v As tVec3)
+    mLookAt = v
     Update
 End Property
 
@@ -88,15 +90,29 @@ Friend Sub GetRotation(ByRef Yaw As Double, ByRef Pitch As Double)
     Yaw = mYaw
 End Sub
 
-Friend Property Let Zoom(V As Double)
-    mZOOM = V
+Friend Property Let Zoom(v As Double)
+    mZOOM = v
 End Property
 
 Friend Property Get Zoom() As Double
     Zoom = mZOOM
 End Property
 
+Friend Property Let FarPlane(v As Double)
+    mFarPlaneDist = v
+End Property
 
+Friend Property Get FarPlane() As Double
+    FarPlane = mFarPlaneDist
+End Property
+
+Friend Property Let NearPlane(v As Double)
+    mNearPlaneDist = v
+End Property
+
+Friend Property Get NearPlane() As Double
+    NearPlane = mNearPlaneDist
+End Property
 
 Friend Sub Init(CameraFrom As tVec3, CameraTo As tVec3, ScreenCenter As tVec3, UP As tVec3)
     mPosition = CameraFrom
@@ -104,7 +120,8 @@ Friend Sub Init(CameraFrom As tVec3, CameraTo As tVec3, ScreenCenter As tVec3, U
     mScreenCenter = ScreenCenter
     mVectorUP = UP
 
-    NearPlaneDist = 5
+    mNearPlaneDist = 5
+    mFarPlaneDist = 1E+32
 
     mZOOM = 1
 
@@ -117,37 +134,29 @@ Private Sub Update(Optional UpdatePitchYawValues As Boolean = False)
 '    // camera matrix
     Dim D         As tVec3
 
-' Left Hand
-'    camWW = Normalize3(DIFF3(mLookAt, mPosition))
-'    camUU = Normalize3(CROSS3(mVectorUP, camWW))
-'    camVV = Normalize3(CROSS3(camUU, camWW))
+    ' Left Hand
+    '    camWW = Normalize3(DIFF3(mLookAt, mPosition))
+    '    camUU = Normalize3(CROSS3(mVectorUP, camWW))
+    '    camVV = Normalize3(CROSS3(camUU, camWW))
 
 
-' Right Hand
+    ' Right Hand
     camWW = Normalize3(DIFF3(mLookAt, mPosition))
     camUU = Normalize3(CROSS3(camWW, mVectorUP))
-    camVV = Normalize3(CROSS3(camUU, camWW))
+    camVV = Normalize3(CROSS3(camWW, camUU))
 
 
     If UpdatePitchYawValues Then    '  (GetRotation)
         ' ############    CAMERA mVectorUP  MUST BE 0,-1,0
         'https://math.stackexchange.com/questions/470112/calculate-camera-pitch-yaw-to-face-point
         'D = DIFF3(Position, lookat)
-        
-        'Left Hand
-'        D = camWW    'opposite sign than above
-'        With D
-'            mPitch = (-Atan2(Sqr(.X * .X + .Z * .Z), .Y)) * Rad2Deg
-'            mYaw = (-Atan2(-.X, -.Z) + PIh) * Rad2Deg
-'        End With
-        
-        
-        'Right Hand
-         D = camWW    'opposite sign than above
+
+        D = camWW    'opposite sign than above
         With D
-            mPitch = (Atan2(Sqr(.X * .X + .Z * .Z), -.Y)) * Rad2Deg
+            mPitch = (-Atan2(Sqr(.X * .X + .Z * .Z), .Y)) * Rad2Deg
             mYaw = (-Atan2(-.X, -.Z) + PIh) * Rad2Deg
         End With
+
     End If
 
 End Sub
@@ -167,26 +176,17 @@ Public Sub SetRotation(ByVal Yaw As Double, ByVal Pitch As Double)
     ' Thanks to Passel:
     ' http://www.vbforums.com/showthread.php?870755-3D-Swimming-Fish-Algorithm&p=5356667&viewfull=1#post5356667
 
-
     ' ############    CAMERA mVectorUP MUST BE 0,-1,0
-'    D = Length3(DIFF3(mPosition, mLookAt))
-'    mPosition.X = mLookAt.X + D * (Sin(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
-'    mPosition.Y = mLookAt.Y + D * (Sin(Pitch * Deg2Rad))
-'    mPosition.Z = mLookAt.Z + D * (Cos(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
-
-
-'    '    'cameraUP = Z
-'            D = Length3(DIFF3(.mPosition, .mLookAt))
-'            mPosition.X = mLookAt.X + D * (Sin(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
-'            mPosition.Y = mLookAt.Y + D * (Cos(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
-'            mPosition.Z = mLookAt.Z + D * (Sin(Pitch * Deg2Rad))
-
-
     D = Length3(DIFF3(mPosition, mLookAt))
     mPosition.X = mLookAt.X + D * (Sin(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
     mPosition.Y = mLookAt.Y + D * (Sin(Pitch * Deg2Rad))
     mPosition.Z = mLookAt.Z + D * (Cos(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
 
+    '    '    'cameraUP = Z
+    '            D = Length3(DIFF3(.mPosition, .mLookAt))
+    '            mPosition.X = mLookAt.X + D * (Sin(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
+    '            mPosition.Y = mLookAt.Y + D * (Cos(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
+    '            mPosition.Z = mLookAt.Z + D * (Sin(Pitch * Deg2Rad))
 
     Update
 
@@ -198,44 +198,45 @@ Friend Function PointToScreenWDCam(WorldPos As tVec3, ProjectedDistFromCam As Do
     Dim IZ        As Double
 
     S = DIFF3(WorldPos, mPosition)
+
     p.X = DOT3(S, camUU)
     p.Y = DOT3(S, camVV)
     p.Z = DOT3(S, camWW)
+
+
     IZ = 1 / p.Z * mZOOM
     PointToScreenWDCam.X = p.X * IZ * mScreenCenter.X + mScreenCenter.X
-        'left hand
-'PointToScreenWDCam.Y = p.Y * IZ * mScreenCenter.X + mScreenCenter.Y
-        'Right hand
-    PointToScreenWDCam.Y = -p.Y * IZ * mScreenCenter.X + mScreenCenter.Y
-    
+    PointToScreenWDCam.Y = p.Y * IZ * mScreenCenter.X + mScreenCenter.Y
+
     PointToScreenWDCam.Z = IZ    ' if its negative point is behind camera
     ProjectedDistFromCam = p.Z  ' if its negative point is behind camera
 
 End Function
 
 Friend Sub PointToScreenCoords(ByVal X As Double, ByVal Y As Double, ByVal Z As Double, _
-                               rX As Double, rY As Double, rZ As Double)
+                               rX As Double, rY As Double, rZ As Double, InvZ As Double)
     Dim S         As tVec3
     Dim p         As tVec3
-    Dim IZ        As Double
+    '    Dim InvZ        As Double
 
     S = Vec3(X, Y, Z)
     S = DIFF3(S, mPosition)
+
     p.X = DOT3(S, camUU)
     p.Y = DOT3(S, camVV)
     p.Z = DOT3(S, camWW)
-    IZ = 1 / p.Z * mZOOM
-    rX = p.X * IZ * mScreenCenter.X + mScreenCenter.X
-    'left hand
-    'rY = p.Y * IZ * mScreenCenter.X + mScreenCenter.Y
-    'Right hand
-    rY = -p.Y * IZ * mScreenCenter.X + mScreenCenter.Y
-    
-    rZ = IZ    ' if its negative point is behind camera
+
+
+
+    InvZ = 1 / p.Z
+    rX = p.X * InvZ * mZOOM * mScreenCenter.X + mScreenCenter.X
+    rY = p.Y * InvZ * mZOOM * mScreenCenter.X + mScreenCenter.Y
+
+    rZ = p.Z    ' if its negative point is behind camera
 
 End Sub
 
-Friend Sub LineToScreen(P1 As tVec3, P2 As tVec3, Ret1 As tVec3, Ret2 As tVec3)
+Friend Sub LineToScreen(P1 As tVec3, P2 As tVec3, Ret1 As tVec3, Ret2 As tVec3, Visible As Boolean)
 
     Dim PlaneCenter As tVec3
     Dim PlaneNormal As tVec3
@@ -247,27 +248,56 @@ Friend Sub LineToScreen(P1 As tVec3, P2 As tVec3, Ret1 As tVec3, Ret2 As tVec3)
     Ret1 = PointToScreenWDCam(P1, DfromCam1)
     Ret2 = PointToScreenWDCam(P2, DfromCam2)
 
-    If DfromCam1 < NearPlaneDist Then
+    Visible = False
 
-        If DfromCam2 < NearPlaneDist Then Exit Sub    'Both points behind camera so EXIT
+
+    If DfromCam1 < mNearPlaneDist Then
+
+        If DfromCam2 < mNearPlaneDist Then Exit Sub    'Both points behind camera so EXIT
 
         'Just P1 Behind, So Find it's intersection To Near plane
         PlaneNormal = camWW
-        PlaneCenter = SUM3(mPosition, MUL3(PlaneNormal, NearPlaneDist))
+        PlaneCenter = SUM3(mPosition, MUL3(PlaneNormal, mNearPlaneDist))
         IntersectP1 = RayPlaneIntersect(DIFF3(P2, P1), P1, PlaneNormal, PlaneCenter)
         Ret1 = PointToScreenWDCam(IntersectP1, DfromCam1)
 
-    ElseIf DfromCam2 < NearPlaneDist Then
+    ElseIf DfromCam2 < mNearPlaneDist Then
 
-        If DfromCam1 < NearPlaneDist Then Exit Sub    'Both points behind camera so EXIT
+        If DfromCam1 < mNearPlaneDist Then Exit Sub    'Both points behind camera so EXIT
 
         'Just P2 Behind, So Find it's intersection To Near plane
         PlaneNormal = camWW
-        PlaneCenter = SUM3(mPosition, MUL3(PlaneNormal, NearPlaneDist))
+        PlaneCenter = SUM3(mPosition, MUL3(PlaneNormal, mNearPlaneDist))
         IntersectP2 = RayPlaneIntersect(DIFF3(P1, P2), P2, PlaneNormal, PlaneCenter)
         Ret2 = PointToScreenWDCam(IntersectP2, DfromCam2)
 
     End If
+
+
+
+    If DfromCam1 > mFarPlaneDist Then
+
+        If DfromCam2 > mFarPlaneDist Then Exit Sub    'Both points Too far from camera so EXIT
+
+        'Just P1 Too far from, So Find it's intersection To Far plane
+        PlaneNormal = camWW
+        PlaneCenter = SUM3(mPosition, MUL3(PlaneNormal, mFarPlaneDist))
+        IntersectP1 = RayPlaneIntersect(DIFF3(P2, P1), P1, PlaneNormal, PlaneCenter)
+        Ret1 = PointToScreenWDCam(IntersectP1, DfromCam1)
+
+    ElseIf DfromCam2 > mFarPlaneDist Then
+
+        If DfromCam1 > mFarPlaneDist Then Exit Sub   'Both points Too far from camera so EXIT
+
+        'Just P2 Too far from, So Find it's intersection To Far plane
+        PlaneNormal = camWW
+        PlaneCenter = SUM3(mPosition, MUL3(PlaneNormal, mFarPlaneDist))
+        IntersectP2 = RayPlaneIntersect(DIFF3(P1, P2), P2, PlaneNormal, PlaneCenter)
+        Ret2 = PointToScreenWDCam(IntersectP2, DfromCam2)
+
+    End If
+
+    Visible = True
 
 End Sub
 
@@ -275,6 +305,8 @@ End Sub
 Friend Function IsPointVisibleCoords(ByVal X As Double, ByVal Y As Double, ByVal Z As Double) As Boolean
 
     If Z < 0 Then Exit Function    ' behind
+
+    If Z > mFarPlaneDist Then Exit Function     ' too far
 
     If X < 0 Then Exit Function    ' check if outside screen
     If Y < 0 Then Exit Function
@@ -286,10 +318,11 @@ Friend Function IsPointVisibleCoords(ByVal X As Double, ByVal Y As Double, ByVal
 End Function
 
 
-Friend Function IsPointVisible(V As tVec3) As Boolean
+Friend Function IsPointVisible(v As tVec3) As Boolean
 
-    With V
+    With v
         If .Z < 0 Then Exit Function    ' behind
+        If .Z > mFarPlaneDist Then Exit Function     ' too far
 
         If .X < 0 Then Exit Function    ' check if outside screen
         If .Y < 0 Then Exit Function
@@ -301,10 +334,11 @@ Friend Function IsPointVisible(V As tVec3) As Boolean
 
 End Function
 
-Friend Function IsPointVisibleGap(V As tVec3, Gap As Double) As Boolean
+Friend Function IsPointVisibleGap(v As tVec3, Gap As Double) As Boolean
 
-    With V
+    With v
         If .Z < 0 Then Exit Function    ' behind
+        If .Z - Gap > mFarPlaneDist Then Exit Function   ' too far
 
         If .X < -Gap Then Exit Function    ' check if outside screen
         If .Y < -Gap Then Exit Function
@@ -329,10 +363,7 @@ Friend Function Follow(Target As tVec3, LookAtSpeed01 As Double, PositionSpeed01
         mPosition = SUM3(MUL3(mPosition, 1 - PositionSpeed01), MUL3(SUM3(Target, MUL3(camWW, -Sqr(MINDist2))), PositionSpeed01))
     End If
 
-'Left Hand:
-'    If PosMinY Then If mPosition.Y > PosMinY Then mPosition.Y = PosMinY
-'Right Hand:
-    If PosMinY Then If mPosition.Y < PosMinY Then mPosition.Y = PosMinY
+    If PosMinY Then If mPosition.Y > PosMinY Then mPosition.Y = PosMinY
 
 
     Update

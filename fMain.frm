@@ -391,9 +391,9 @@ Private Sub Form_Load()
     'V6
     Set CAMERA = New c3DEasyCam
 
-    CAMERA.Init Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5 + WW * 0.7), _
+    CAMERA.Init Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5 - WW * 0.7), _
                 Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5), _
-                Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5), Vec3(0, 1, 0)
+                Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5), Vec3(0, -1, 0)
 
 
 End Sub
@@ -422,12 +422,14 @@ Public Sub MainLoop()
     Dim J         As Long
 
 
-    Dim V         As Double
+    Dim v         As Double
     Dim OnP       As String
 
     Dim X         As Double
     Dim Y         As Double
     Dim Z         As Double
+    Dim InvZ      As Double
+
 
     Dim DrawOrderIDX() As Long
     Dim DistFromCamera() As Double
@@ -437,16 +439,22 @@ Public Sub MainLoop()
 
     Dim DC        As Double
     Dim L         As Long
-Dim tV As tVec3
+    Dim tV        As tVec3
 
 
     ' V5 BOX
     Dim LP1(1 To 12) As tVec3
     Dim LP2(1 To 12) As tVec3
+    Dim Vis(1 To 12) As Boolean
+
 
 
     Dim DrawR     As Double
     Dim InvGravScale As Double
+
+    Dim yyy       As Double
+    Dim ppp       As Double
+
 
     DrawR = H * 0.12
 
@@ -477,9 +485,9 @@ Dim tV As tVec3
 
 
 
-gX = 0
-gY = -1
-gZ = 0
+    gX = 0
+    gY = 1
+    gZ = 0
 
 
 
@@ -507,10 +515,10 @@ gZ = 0
     Next
 
     Do
-   
-'    CAMERA.Follow Vec3(pX(1), pY(1), pZ(1)), 0.03, 0.0125, 30000, 18000: RecomputeBOX = True
-'    CAMERA.Follow Vec3(COMx, COMy, COMz), 0.025, 0.0125, 80600, 40000: RecomputeBOX = True
-        
+
+        '    CAMERA.Follow Vec3(pX(1), pY(1), pZ(1)), 0.03, 0.0125, 30000, 18000: RecomputeBOX = True
+        '    CAMERA.Follow Vec3(COMx, COMy, COMz), 0.025, 0.0125, 80600, 40000: RecomputeBOX = True
+
         SPH_MOVE
 
         SpatialGRID.ResetPoints
@@ -531,27 +539,29 @@ gZ = 0
                 ' DRAW BOX------------------------------ V5
                 If RecomputeBOX Then
 
-                    CAMERA.LineToScreen Vec3(0, 0, 0), Vec3(WW * 1, 0, 0), LP1(1), LP2(1)
-                    CAMERA.LineToScreen Vec3(WW * 1, 0, 0), Vec3(WW * 1, HH * 1, 0), LP1(2), LP2(2)
-                    CAMERA.LineToScreen Vec3(WW * 1, HH * 1, 0), Vec3(0, HH * 1, 0), LP1(3), LP2(3)
-                    CAMERA.LineToScreen Vec3(0, HH * 1, 0), Vec3(0, 0, 0), LP1(4), LP2(4)
+                    CAMERA.LineToScreen Vec3(0, 0, 0), Vec3(WW * 1, 0, 0), LP1(1), LP2(1), Vis(1)
+                    CAMERA.LineToScreen Vec3(WW * 1, 0, 0), Vec3(WW * 1, HH * 1, 0), LP1(2), LP2(2), Vis(2)
+                    CAMERA.LineToScreen Vec3(WW * 1, HH * 1, 0), Vec3(0, HH * 1, 0), LP1(3), LP2(3), Vis(3)
+                    CAMERA.LineToScreen Vec3(0, HH * 1, 0), Vec3(0, 0, 0), LP1(4), LP2(4), Vis(4)
 
-                    CAMERA.LineToScreen Vec3(0, 0, ZZ * 1), Vec3(WW * 1, 0, ZZ * 1), LP1(5), LP2(5)
-                    CAMERA.LineToScreen Vec3(WW * 1, 0, ZZ * 1), Vec3(WW * 1, HH * 1, ZZ * 1), LP1(6), LP2(6)
-                    CAMERA.LineToScreen Vec3(WW * 1, HH * 1, ZZ * 1), Vec3(0, HH * 1, ZZ * 1), LP1(7), LP2(7)
-                    CAMERA.LineToScreen Vec3(0, HH * 1, ZZ * 1), Vec3(0, 0, ZZ * 1), LP1(8), LP2(8)
+                    CAMERA.LineToScreen Vec3(0, 0, ZZ * 1), Vec3(WW * 1, 0, ZZ * 1), LP1(5), LP2(5), Vis(5)
+                    CAMERA.LineToScreen Vec3(WW * 1, 0, ZZ * 1), Vec3(WW * 1, HH * 1, ZZ * 1), LP1(6), LP2(6), Vis(6)
+                    CAMERA.LineToScreen Vec3(WW * 1, HH * 1, ZZ * 1), Vec3(0, HH * 1, ZZ * 1), LP1(7), LP2(7), Vis(7)
+                    CAMERA.LineToScreen Vec3(0, HH * 1, ZZ * 1), Vec3(0, 0, ZZ * 1), LP1(8), LP2(8), Vis(8)
 
 
-                    CAMERA.LineToScreen Vec3(0, 0, 0), Vec3(0, 0, ZZ * 1), LP1(9), LP2(9)
-                    CAMERA.LineToScreen Vec3(WW * 1, 0, 0), Vec3(WW * 1, 0, ZZ * 1), LP1(10), LP2(10)
-                    CAMERA.LineToScreen Vec3(WW * 1, HH * 1, 0), Vec3(WW * 1, HH * 1, ZZ * 1), LP1(11), LP2(11)
-                    CAMERA.LineToScreen Vec3(0, HH * 1, 0), Vec3(0, HH * 1, ZZ * 1), LP1(12), LP2(12)
+                    CAMERA.LineToScreen Vec3(0, 0, 0), Vec3(0, 0, ZZ * 1), LP1(9), LP2(9), Vis(9)
+                    CAMERA.LineToScreen Vec3(WW * 1, 0, 0), Vec3(WW * 1, 0, ZZ * 1), LP1(10), LP2(10), Vis(10)
+                    CAMERA.LineToScreen Vec3(WW * 1, HH * 1, 0), Vec3(WW * 1, HH * 1, ZZ * 1), LP1(11), LP2(11), Vis(11)
+                    CAMERA.LineToScreen Vec3(0, HH * 1, 0), Vec3(0, HH * 1, ZZ * 1), LP1(12), LP2(12), Vis(12)
                     RecomputeBOX = False
                 End If
                 .SetSourceRGBA 0.5, 0.85, 0.5, 0.5   ' 0.35
 
                 For L = 1 To 12
-                    If LP1(L).Z > 0 And LP2(L).Z > 0 Then .MoveTo LP1(L).X, LP1(L).Y: .LineTo LP2(L).X, LP2(L).Y: .Stroke
+
+                    ' If LP1(L).Z > 0 And LP2(L).Z > 0 Then .MoveTo LP1(L).X, LP1(L).Y: .LineTo LP2(L).X, LP2(L).Y: .Stroke
+                    If Vis(L) Then .MoveTo LP1(L).X, LP1(L).Y: .LineTo LP2(L).X, LP2(L).Y: .Stroke
                 Next
                 ' END DRAW BOX--------------------------------------------
 
@@ -576,17 +586,17 @@ gZ = 0
                 Next
                 QuickSortSingle2 DistFromCamera(), DrawOrderIDX(), 0, NP
                 ' END DRAW ORDER -------
-                
+
                 For I = 1 To NP
 
                     J = DrawOrderIDX(I)
 
                     'V = Pressure(J) * 0.075
-                    V = Pressure(J) * 0.15   'V5
+                    v = Pressure(J) * 0.15   'V5
 
-                    CAMERA.PointToScreenCoords pX(J), pY(J), pZ(J), X, Y, Z
-                    If Z > 0 Then
-                    'If CAMERA.IsPointVisible(x, Y, Z) Then
+                    CAMERA.PointToScreenCoords pX(J), pY(J), pZ(J), X, Y, Z, InvZ
+                    'If Z > 0 Then
+                    If CAMERA.IsPointVisibleGap(Vec3(X, Y, Z), 20) Then
 
                         ' V = V + Z * 50 - 0.2
                         If Phase(J) = 1 Then
@@ -595,21 +605,21 @@ gZ = 0
                             '                      .SetSourceRGBA 0.02 + V, 0.5 + V, 0.6 + V, 0.85   '(V 3 )
 
                             '.SetSourceRGBA 0.01 + V, 0.45 + V, 0.55 + V, 0.8    '0.7  '(V 4)
-                            
+
                             '.SetSourceRGBA 0.015 + V, 0.5 + V, 0.6 + V, 0.8  '0.7  '(V 5)
-                            
-.SetSourceRGBA 0.015 + V, 0.5 + V, 0.6 + V, 0.95
-                            
+
+                            .SetSourceRGBA 0.015 + v, 0.5 + v, 0.6 + v, 0.95
+
                         Else
                             '.SetSourceRGBA 0.2 + V, 0.7 + V, 0.2 + V, 0.7
-                            
-                           ' .SetSourceRGBA 0.15 + V, 0.6 + V, 0.15 + V, 0.8
- .SetSourceRGBA 0.1 + V, 0.5 + V, 0.1 + V, 0.95
-                         
+
+                            ' .SetSourceRGBA 0.15 + V, 0.6 + V, 0.15 + V, 0.8
+                            .SetSourceRGBA 0.1 + v, 0.5 + v, 0.1 + v, 0.95
+
                         End If
 
                         '.Arc X, Y, 0.7! + DrawR * Z * 340! '(V3)
-                        .Arc X, Y, 0.7 + DrawR * Z * 450!  'V4
+                        .Arc X, Y, 0.7 + DrawR * InvZ * 450!  'V4
 
                         .Fill
                     End If
@@ -634,9 +644,9 @@ gZ = 0
                 .Arc 30, 30, 25
                 .Stroke
                 .MoveTo 30, 30
-                .LineTo 30 + gX * 25 * InvGravScale, 30 - gY * 25 * InvGravScale
+                .LineTo 30 + gX * 25 * InvGravScale, 30 + gY * 25 * InvGravScale
                 .Stroke
-                .Arc 30 + gX * 25 * InvGravScale, 30 - gY * 25 * InvGravScale, 15 * Abs(gZ) * InvGravScale
+                .Arc 30 + gX * 25 * InvGravScale, 30 + gY * 25 * InvGravScale, 15 * Abs(gZ) * InvGravScale
                 If gZ > 0 Then .Fill Else: .Stroke
 
 
@@ -650,6 +660,14 @@ gZ = 0
                 .SelectFont "Courier New", 10, vbGreen, True
                 .TextOut 80, 4, "Pts: " & Format$(NP, "###,###,###") & "    " & "h = " & H & "   Pairs: " & OnP & "   "
                 .TextOut WW - 185, 4, "Simple SPH by miorsoft"
+
+
+                '                .TextOut 80, 35, "  camera Pos X   " & CAMERA.Position.X
+                '                .TextOut 80, 55, "             Y   " & CAMERA.Position.Y
+                '                .TextOut 80, 75, "             Z   " & CAMERA.Position.Z
+                '                CAMERA.GetRotation yyy, ppp
+                '                .TextOut 80, 95, "            Yaw   " & yyy
+                '                .TextOut 80, 115, "            Pitch " & ppp
 
 
             End With
@@ -670,20 +688,20 @@ gZ = 0
                 gTOY = (Rnd * 2 - 1) * GravScale
                 gTOZ = (Rnd * 2 - 1) * GravScale * 1.1
 
-If Rnd > 0.1 Then
-                If Abs(gTOX) > Abs(gTOY) And Abs(gTOX) > Abs(gTOZ) Then gTOY = 0: gTOZ = 0
-                If Abs(gTOY) > Abs(gTOX) And Abs(gTOY) > Abs(gTOX) Then gTOX = 0: gTOZ = 0
-                If Abs(gTOZ) > Abs(gTOY) And Abs(gTOZ) > Abs(gTOX) Then gTOY = 0: gTOX = 0
+                If Rnd > 0.1 Then
+                    If Abs(gTOX) > Abs(gTOY) And Abs(gTOX) > Abs(gTOZ) Then gTOY = 0: gTOZ = 0
+                    If Abs(gTOY) > Abs(gTOX) And Abs(gTOY) > Abs(gTOX) Then gTOX = 0: gTOZ = 0
+                    If Abs(gTOZ) > Abs(gTOY) And Abs(gTOZ) > Abs(gTOX) Then gTOY = 0: gTOX = 0
 
-                If Rnd < 0.1 Then gTOX = 0: gTOY = 0: gTOZ = 0
-End If
+                    If Rnd < 0.1 Then gTOX = 0: gTOY = 0: gTOZ = 0
+                End If
 
             End If
 
             Line1.X1 = picGravity.Width * 0.5
             Line1.Y1 = picGravity.Height * 0.5
             Line1.X2 = Line1.X1 + gTOX * picGravity.Width * 0.5 * InvGravScale
-            Line1.Y2 = Line1.Y1 - gTOY * picGravity.Height * 0.5 * InvGravScale
+            Line1.Y2 = Line1.Y1 + gTOY * picGravity.Height * 0.5 * InvGravScale
 
         End If
 
@@ -694,12 +712,12 @@ End If
         gZ = gZ * 0.98 + gTOZ * 0.02
 
 
-''''CameraMoveWithGravity
-'''CAMERA.Position = SUM3(CAMERA.lookat, MUL3(Normalize3(Vec3(gZ, -Abs(gX), gY)), 680))
-''tV = SUM3(MUL3(DIFF3(CAMERA.Position, CAMERA.lookat), 0.95), MUL3(Normalize3(Vec3(gZ, -Abs(gX), gY)), 0.05 * 610))
-''CAMERA.Position = SUM3(CAMERA.lookat, tV)
-'''CAMERA.VectorUP = SUM3(MUL3(CAMERA.VectorUP, 0.5), MUL3(Vec3(-gX, -gY, -gZ), 0.5)): RecomputeBOX = True
-''CAMERA.VectorUP = Vec3(-gX, -gY, -gZ): RecomputeBOX = True
+        ''''CameraMoveWithGravity
+        '''CAMERA.Position = SUM3(CAMERA.lookat, MUL3(Normalize3(Vec3(gZ, -Abs(gX), gY)), 680))
+        ''tV = SUM3(MUL3(DIFF3(CAMERA.Position, CAMERA.lookat), 0.95), MUL3(Normalize3(Vec3(gZ, -Abs(gX), gY)), 0.05 * 610))
+        ''CAMERA.Position = SUM3(CAMERA.lookat, tV)
+        '''CAMERA.VectorUP = SUM3(MUL3(CAMERA.VectorUP, 0.5), MUL3(Vec3(-gX, -gY, -gZ), 0.5)): RecomputeBOX = True
+        ''CAMERA.VectorUP = Vec3(-gX, -gY, -gZ): RecomputeBOX = True
 
 
 
@@ -729,7 +747,7 @@ Private Sub PIC_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As
 
         CAMERA.SetRotation 0, 0
 
-        CAMERA.Position = SUM3(MUL3(Normalize3(DIFF3(CAMERA.Position, CAMERA.lookat)), WW * 0.7), CAMERA.lookat)
+        CAMERA.Position = SUM3(MUL3(Normalize3(DIFF3(CAMERA.Position, CAMERA.lookat)), -WW * 0.7), CAMERA.lookat)
 
         RecomputeBOX = True
     End If
@@ -755,12 +773,12 @@ Private Sub PIC_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As
         CAMERA.GetRotation Yaw, Pitch
 
         'Left hand
-'        Pitch = Pitch - 0.25 * DY
-'        Yaw = (Yaw - 0.25 * dx)
-'        Right Hand
-        Pitch = Pitch + 0.25 * DY
-        Yaw = (Yaw - 0.25 * dx)
-        
+        Pitch = Pitch - 0.25 * DY
+        Yaw = (Yaw + 0.25 * dx)
+        '        Right Hand
+        '        Pitch = Pitch - 0.25 * DY
+        '        Yaw = (Yaw + 0.25 * dx)
+
         x0 = X: y0 = Y
         '        If Pitch > 90 Then Pitch = 90
         '        If Pitch < -90 Then Pitch = -90
@@ -790,7 +808,7 @@ Private Sub picGravity_MouseDown(Button As Integer, Shift As Integer, X As Singl
         Y = (Y \ 5) * 5
 
         gTOX = 2 * (X - picGravity.Width * 0.5) / picGravity.Width * GravScale
-        gTOY = -2 * (Y - picGravity.Height * 0.5) / picGravity.Height * GravScale
+        gTOY = 2 * (Y - picGravity.Height * 0.5) / picGravity.Height * GravScale
 
         Line1.X1 = picGravity.Width * 0.5
         Line1.Y1 = picGravity.Height * 0.5
@@ -830,7 +848,7 @@ End Sub
 
 
 Private Sub FaucetSource(fPhase As Long)
-    Dim a         As Double
+    Dim A         As Double
     Dim C         As Double
     Dim S         As Double
     Dim X         As Double
@@ -839,7 +857,7 @@ Private Sub FaucetSource(fPhase As Long)
     Dim sX        As Double
     Dim sY        As Double
 
-    a = (CNT * 0.0125)
+    A = (CNT * 0.0125)
 
 
     If fPhase = 1 Then
@@ -848,11 +866,11 @@ Private Sub FaucetSource(fPhase As Long)
     Else
         sX = WW * 2 / 3
         sY = HH * 1 / 3
-        a = -a    '+ 3.14159265358979 '* 0.5
+        A = -A    '+ 3.14159265358979 '* 0.5
     End If
 
-    C = Cos(a)
-    S = Sin(a)
+    C = Cos(A)
+    S = Sin(A)
 
     For L = -H * 1 To H * 1 Step H * 0.25
         X = sX + C * L
