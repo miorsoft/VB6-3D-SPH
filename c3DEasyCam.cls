@@ -32,9 +32,9 @@ Private Const Rad2Deg As Double = 57.2957795130823      'Radians to Degrees
 Private mPosition As tVec3    'Camera Position
 Private mLookAt   As tVec3    'Camera LookAT
 Private mScreenCenter As tVec3    'Center coords of screen
-Private camUU     As tVec3    'Cam Matrix
-Private camVV     As tVec3
-Private camWW     As tVec3
+Private camRIGHT     As tVec3    'Cam Matrix
+Private camUP     As tVec3
+Private camFRONT     As tVec3
 Private mVectorUP As tVec3    'Vector UP
 Private mNearPlaneDist As Double
 Private mFarPlaneDist As Double
@@ -47,7 +47,7 @@ Private mZOOM     As Double
 
 Friend Property Let Position(v As tVec3)
     mPosition = v
-    Update
+    UPDATE
 End Property
 
 Friend Property Get Position() As tVec3
@@ -56,7 +56,7 @@ End Property
 
 Friend Property Let lookat(v As tVec3)
     mLookAt = v
-    Update
+    UPDATE
 End Property
 
 Friend Property Get lookat() As tVec3
@@ -66,17 +66,17 @@ End Property
 Friend Sub SetPositionAndLookAt(Pos As tVec3, Look As tVec3)
     mPosition = Pos
     mLookAt = Look
-    Update
+    UPDATE
 End Sub
 
 Friend Property Get Direction() As tVec3
-    Direction = camWW
+    Direction = camFRONT
 End Property
 
 
 Friend Property Let VectorUP(UP As tVec3)
     mVectorUP = Normalize3(UP)
-    Update
+    UPDATE
 End Property
 
 Friend Property Get VectorUP() As tVec3
@@ -85,7 +85,7 @@ End Property
 
 
 Friend Sub GetRotation(ByRef Yaw As Double, ByRef Pitch As Double)
-    Update True
+    UPDATE True
     Pitch = mPitch
     Yaw = mYaw
 End Sub
@@ -118,32 +118,39 @@ Friend Sub Init(CameraFrom As tVec3, CameraTo As tVec3, ScreenCenter As tVec3, U
     mPosition = CameraFrom
     mLookAt = CameraTo
     mScreenCenter = ScreenCenter
-    mVectorUP = UP
+    mVectorUP = Normalize3(UP)
 
     mNearPlaneDist = 5
     mFarPlaneDist = 1E+32
 
     mZOOM = 1
 
-    Update
+    UPDATE
 End Sub
 
 
-Private Sub Update(Optional UpdatePitchYawValues As Boolean = False)
+Private Sub UPDATE(Optional UpdatePitchYawValues As Boolean = False)
 ' Call this every time you change Camera Position or Target !!!
 '    // camera matrix
     Dim D         As tVec3
 
     ' Left Hand
-    '    camWW = Normalize3(DIFF3(mLookAt, mPosition))
-    '    camUU = Normalize3(CROSS3(mVectorUP, camWW))
-    '    camVV = Normalize3(CROSS3(camUU, camWW))
+    '    camFRONT = Normalize3(DIFF3(mLookAt, mPosition))
+    '    camRIGHT = Normalize3(CROSS3(mVectorUP, camFRONT))
+    '    camUP = Normalize3(CROSS3(camRIGHT, camFRONT))
 
 
     ' Right Hand
-    camWW = Normalize3(DIFF3(mLookAt, mPosition))
-    camUU = Normalize3(CROSS3(camWW, mVectorUP))
-    camVV = Normalize3(CROSS3(camWW, camUU))
+    camFRONT = Normalize3(DIFF3(mLookAt, mPosition))
+    camRIGHT = Normalize3(CROSS3(camFRONT, mVectorUP))
+    camUP = Normalize3(CROSS3(camFRONT, camRIGHT))
+
+
+'Debug.Print ToString3(camFRONT)
+'Debug.Print ToString3(camRIGHT)
+'Debug.Print ToString3(camUP)
+
+
 
 
     If UpdatePitchYawValues Then    '  (GetRotation)
@@ -151,7 +158,7 @@ Private Sub Update(Optional UpdatePitchYawValues As Boolean = False)
         'https://math.stackexchange.com/questions/470112/calculate-camera-pitch-yaw-to-face-point
         'D = DIFF3(Position, lookat)
 
-        D = camWW    'opposite sign than above
+        D = camFRONT    'opposite sign than above
         With D
             mPitch = (-Atan2(Sqr(.X * .X + .Z * .Z), .Y)) * Rad2Deg
             mYaw = (-Atan2(-.X, -.Z) + PIh) * Rad2Deg
@@ -188,7 +195,7 @@ Public Sub SetRotation(ByVal Yaw As Double, ByVal Pitch As Double)
     '            mPosition.Y = mLookAt.Y + D * (Cos(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
     '            mPosition.Z = mLookAt.Z + D * (Sin(Pitch * Deg2Rad))
 
-    Update
+    UPDATE
 
 End Sub
 
@@ -199,9 +206,9 @@ Friend Function PointToScreenWDCam(WorldPos As tVec3, ProjectedDistFromCam As Do
 
     S = DIFF3(WorldPos, mPosition)
 
-    p.X = DOT3(S, camUU)
-    p.Y = DOT3(S, camVV)
-    p.Z = DOT3(S, camWW)
+    p.X = DOT3(S, camRIGHT)
+    p.Y = DOT3(S, camUP)
+    p.Z = DOT3(S, camFRONT)
 
 
     IZ = 1 / p.Z * mZOOM
@@ -222,9 +229,9 @@ Friend Sub PointToScreenCoords(ByVal X As Double, ByVal Y As Double, ByVal Z As 
     S = Vec3(X, Y, Z)
     S = DIFF3(S, mPosition)
 
-    p.X = DOT3(S, camUU)
-    p.Y = DOT3(S, camVV)
-    p.Z = DOT3(S, camWW)
+    p.X = DOT3(S, camRIGHT)
+    p.Y = DOT3(S, camUP)
+    p.Z = DOT3(S, camFRONT)
 
 
 
@@ -256,7 +263,7 @@ Friend Sub LineToScreen(P1 As tVec3, P2 As tVec3, Ret1 As tVec3, Ret2 As tVec3, 
         If DfromCam2 < mNearPlaneDist Then Exit Sub    'Both points behind camera so EXIT
 
         'Just P1 Behind, So Find it's intersection To Near plane
-        PlaneNormal = camWW
+        PlaneNormal = camFRONT
         PlaneCenter = SUM3(mPosition, MUL3(PlaneNormal, mNearPlaneDist))
         IntersectP1 = RayPlaneIntersect(DIFF3(P2, P1), P1, PlaneNormal, PlaneCenter)
         Ret1 = PointToScreenWDCam(IntersectP1, DfromCam1)
@@ -266,7 +273,7 @@ Friend Sub LineToScreen(P1 As tVec3, P2 As tVec3, Ret1 As tVec3, Ret2 As tVec3, 
         If DfromCam1 < mNearPlaneDist Then Exit Sub    'Both points behind camera so EXIT
 
         'Just P2 Behind, So Find it's intersection To Near plane
-        PlaneNormal = camWW
+        PlaneNormal = camFRONT
         PlaneCenter = SUM3(mPosition, MUL3(PlaneNormal, mNearPlaneDist))
         IntersectP2 = RayPlaneIntersect(DIFF3(P1, P2), P2, PlaneNormal, PlaneCenter)
         Ret2 = PointToScreenWDCam(IntersectP2, DfromCam2)
@@ -274,13 +281,13 @@ Friend Sub LineToScreen(P1 As tVec3, P2 As tVec3, Ret1 As tVec3, Ret2 As tVec3, 
     End If
 
 
-
+'Same for FAR PLANE
     If DfromCam1 > mFarPlaneDist Then
 
         If DfromCam2 > mFarPlaneDist Then Exit Sub    'Both points Too far from camera so EXIT
 
         'Just P1 Too far from, So Find it's intersection To Far plane
-        PlaneNormal = camWW
+        PlaneNormal = camFRONT
         PlaneCenter = SUM3(mPosition, MUL3(PlaneNormal, mFarPlaneDist))
         IntersectP1 = RayPlaneIntersect(DIFF3(P2, P1), P1, PlaneNormal, PlaneCenter)
         Ret1 = PointToScreenWDCam(IntersectP1, DfromCam1)
@@ -290,7 +297,7 @@ Friend Sub LineToScreen(P1 As tVec3, P2 As tVec3, Ret1 As tVec3, Ret2 As tVec3, 
         If DfromCam1 > mFarPlaneDist Then Exit Sub   'Both points Too far from camera so EXIT
 
         'Just P2 Too far from, So Find it's intersection To Far plane
-        PlaneNormal = camWW
+        PlaneNormal = camFRONT
         PlaneCenter = SUM3(mPosition, MUL3(PlaneNormal, mFarPlaneDist))
         IntersectP2 = RayPlaneIntersect(DIFF3(P1, P2), P2, PlaneNormal, PlaneCenter)
         Ret2 = PointToScreenWDCam(IntersectP2, DfromCam2)
@@ -358,15 +365,15 @@ Friend Function Follow(Target As tVec3, LookAtSpeed01 As Double, PositionSpeed01
 
     D = Length32(DIFF3(mLookAt, mPosition))
     If D > MAXDist2 Then
-        mPosition = SUM3(MUL3(mPosition, 1 - PositionSpeed01), MUL3(SUM3(Target, MUL3(camWW, -Sqr(MAXDist2))), PositionSpeed01))
+        mPosition = SUM3(MUL3(mPosition, 1 - PositionSpeed01), MUL3(SUM3(Target, MUL3(camFRONT, -Sqr(MAXDist2))), PositionSpeed01))
     ElseIf D < MINDist2 Then
-        mPosition = SUM3(MUL3(mPosition, 1 - PositionSpeed01), MUL3(SUM3(Target, MUL3(camWW, -Sqr(MINDist2))), PositionSpeed01))
+        mPosition = SUM3(MUL3(mPosition, 1 - PositionSpeed01), MUL3(SUM3(Target, MUL3(camFRONT, -Sqr(MINDist2))), PositionSpeed01))
     End If
 
     If PosMinY Then If mPosition.Y > PosMinY Then mPosition.Y = PosMinY
 
 
-    Update
+    UPDATE
 
 End Function
 

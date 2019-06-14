@@ -174,7 +174,7 @@ Friend Sub InsertPoint(ByVal X As Double, ByVal Y As Double, ByVal Z As Double)
     End If
     pX(NP) = X
     pY(NP) = Y
-    pY(NP) = Z
+    pZ(NP) = Z
 
     pvAddToCell X \ GridSize, Y \ GridSize, Z \ GridSize, NP
 
@@ -674,6 +674,7 @@ Private Sub pvAddPairWDist(ByVal P1 As Long, ByVal P2 As Long, _
 
     PairP1(Npairs) = P1
     PairP2(Npairs) = P2
+    
     PairDX(Npairs) = dx
     PairDY(Npairs) = DY
     PairDZ(Npairs) = dz

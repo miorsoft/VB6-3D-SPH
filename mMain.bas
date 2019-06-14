@@ -127,7 +127,7 @@ Public Sub SPH_InitConst()
 
     KAttraction = 0.0128 * invDT
     KPressure = kernelWeight * 0.08 * invDT
-    KViscosity = 0.018 * 0.75
+    KViscosity = 0.018 * 0.8
 
     ReDim VXChange(NP)
     ReDim VYChange(NP)

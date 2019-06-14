@@ -135,14 +135,20 @@ Public Function DIFF3(v1 As tVec3, V2 As tVec3) As tVec3
 End Function
 
 
-Public Function Project3(v As tVec3, N As tVec3) As tVec3
-    Dim DOT       As Double
-
-    DOT = DOT3(v, N)
-    Project3 = MUL3(N, DOT)
+Public Function Project3(v As tVec3, V2nrmlzd As tVec3) As tVec3
+    
+    Project3 = MUL3(V2nrmlzd, DOT3(v, V2nrmlzd))
 
 End Function
 
+
+Public Function ProjectToPlane3(v As tVec3, PlaneN As tVec3) As tVec3
+    Dim DOT       As Double
+' unsure !
+    ProjectToPlane3 = DIFF3(v, Project3(v, PlaneN))
+'https://www.physicsforums.com/threads/projecting-a-vector-onto-a-plane.496184/
+'Project3 = CROSS3(V2nrmlzd, CROSS3(v, V2nrmlzd))
+End Function
 
 
 
@@ -151,18 +157,6 @@ Public Function Rotate3(p As tVec3, Direc As tVec3) As tVec3
 
 ' TO TEST and ADJUST
 'Stop
-'
-'    Rotate3.X = DOT3(V, Vec3(Direc.X, 0, -Direc.Z))
-'    Rotate3.Y = DOT3(V, Vec3(0, 0, 0))
-'    Rotate3.Z = DOT3(V, Vec3(Direc.Z, 0, Direc.X))
-'
-'    Rotate3.X = Rotate3.X + DOT3(V, Vec3(Direc.X, -Direc.Y, 0))
-'    Rotate3.Y = Rotate3.Y + DOT3(V, Vec3(Direc.Y, Direc.X, 0))
-'    Rotate3.Z = Rotate3.Z + DOT3(V, Vec3(0, 0, 0))
-'
-'    Rotate3.X = Rotate3.X + DOT3(V, Vec3(0, 0, 0))
-'    Rotate3.Y = Rotate3.Y + DOT3(V, Vec3(0, Direc.Y, -Direc.Z))
-'    Rotate3.Z = Rotate3.Z + DOT3(V, Vec3(0, Direc.Z, Direc.Y))
 
     Dim U         As tVec3
     Dim v         As tVec3
@@ -170,27 +164,91 @@ Public Function Rotate3(p As tVec3, Direc As tVec3) As tVec3
 
     Dim R         As tRotor3
 
+    Dim A         As tVec3
+    Dim B         As tVec3
+    Dim C         As tVec3
+
+    Dim PL1       As tVec3
+    Dim PL2       As tVec3
+    Dim PL3       As tVec3
+    Dim D         As tVec3
+    
+    
+    
+    
+    D = Normalize3(Direc)
+'    D = MUL3(D, -1)
+    
+    
+        Rotate3 = Rotate3yz(p, D)
+    Rotate3 = Rotate3xy(Rotate3, D)
+
+    
+    
+    
+    '    D = Normalize3(Direc)
+    '
+    '    A = MUL3(D, 1)
+    '    B = CROSS3(Vec3(0, -1, 0), A)
+    '    C = CROSS3(B, A)
+    '
+    '
+    '    U = Project3(p, A)
+    '    v = Project3(p, B)
+    '    W = Project3(p, C)
+    '
+    '    Rotate3 = U 'SUM3(U, SUM3(v, W))
+    '
+    ''    Rotate3.Z = W.Z
+    ''    Rotate3.X = U.X
+    ''    Rotate3.Y = v.Y
+    '------------------------------------------------------------------
+    'PL1 = Normalize3(Direc)
+    'PL2 = CROSS3(Vec3(0, 1, 0), PL1)
+    'PL3 = CROSS3(PL2, PL1)
+    '
+    'A = ProjectToPlane3(p, PL1)
+    'B = ProjectToPlane3(p, PL2)
+    'C = ProjectToPlane3(p, PL3)
+    '
+    'A = Normalize3(A)
+    'B = Normalize3(B)
+    'C = Normalize3(C)
+    '
+    '
+    'Rotate3.X = DOT3(p, A)
+    'Rotate3.Y = DOT3(p, B)
+    'Rotate3.Z = DOT3(p, C)
+
+
+    '------------------------------------------------------------------
 
     '    'ALMOST RIGHT
     '
-    '    W = Normalize3(Vec3(Direc.x, Direc.Y, -Direc.Z))
-    '    U = Normalize3(CROSS3(Vec3(0, -1, 0), W))
-    '    V = Normalize3(CROSS3(U, W))
-    '
-    '    Rotate3.x = DOT3(p, W)
-    '    Rotate3.Y = DOT3(p, V)
-    '    Rotate3.Z = DOT3(p, U)
+    ''        W = Normalize3(Vec3(Direc.X, -Direc.Y, Direc.Z))
+    ''        U = Normalize3(CROSS3(W, Vec3(0, -1, 0)))
+    ''        v = Normalize3(CROSS3(W, U))
+    ''
+    ''        Rotate3.X = DOT3(p, U)
+    ''        Rotate3.Y = DOT3(p, v)
+    ''        Rotate3.Z = DOT3(p, W)
 
 
-    'http://marctenbosch.com/quaternions/
-
-
-    R = Rotor3FT(Vec3(0, 1, 0), Normalize3(Vec3(Direc.X, Direc.Y, Direc.Z)))
-
-    Rotate3 = Rotate3WithRotor(p, R)
+    '    'http://marctenbosch.com/quaternions/
+    '    R = Rotor3FT(Vec3(0, 1, 0), Normalize3(Vec3(Direc.X, Direc.Y, Direc.Z)))
+    '    Rotate3 = Rotate3WithRotor(p, R)
 
 
 End Function
+
+
+
+Public Function ToString3(v As tVec3) As String
+    ToString3 = v.X & "   " & v.Y & "   " & v.Z
+End Function
+
+
+
 
 ''''******************************************************************
 ''''   TODO:
@@ -264,8 +322,17 @@ End Function
 Public Function Rotate3yz(v As tVec3, DirectionYZ As tVec3) As tVec3
 
     Rotate3yz.X = DOT3(v, Vec3(1, 0, 0))
-    Rotate3yz.Y = DOT3(v, Vec3(0, DirectionYZ.Y, DirectionYZ.Y))
+    Rotate3yz.Y = DOT3(v, Vec3(0, DirectionYZ.Y, DirectionYZ.Z))
     Rotate3yz.Z = DOT3(v, Vec3(0, -DirectionYZ.Z, DirectionYZ.Y))
+
+End Function
+
+Public Function Rotate3zx(v As tVec3, DirectionZX As tVec3) As tVec3
+
+    Rotate3zx.Z = DOT3(v, Vec3(0, DirectionZX.X, DirectionZX.Z))
+    Rotate3zx.Y = DOT3(v, Vec3(0, 1, 0))
+    Rotate3zx.X = DOT3(v, Vec3(0, -DirectionZX.Z, DirectionZX.X))
+
 
 End Function
 
@@ -314,17 +381,17 @@ End Function
 
 
 Public Function Rotor3Normalize(R As tRotor3) As tRotor3
-    Dim L         As Double
+    Dim l         As Double
 
     With R
-        L = .A * .A + .b01 * .b01 + .b02 * .b02 + .b12 * .b12
+        l = .A * .A + .b01 * .b01 + .b02 * .b02 + .b12 * .b12
 
-        If L Then
-            L = 1 / Sqr(L)
-            Rotor3Normalize.A = .A * L
-            Rotor3Normalize.b01 = .b01 * L
-            Rotor3Normalize.b02 = .b02 * L
-            Rotor3Normalize.b12 = .b12 * L
+        If l Then
+            l = 1 / Sqr(l)
+            Rotor3Normalize.A = .A * l
+            Rotor3Normalize.b01 = .b01 * l
+            Rotor3Normalize.b02 = .b02 * l
+            Rotor3Normalize.b12 = .b12 * l
         End If
 
     End With
