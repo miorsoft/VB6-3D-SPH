@@ -74,7 +74,7 @@ Private Sub pvArrCopySingle(dest() As Double, Src() As Double)
 
         If pvArrayExists(ArrPtr(dest)) Then
             '        If (W - UBound(dest, 1)) Or (H - UBound(dest, 2)) Then
-            If (W - UBound(dest, 1)) Then
+            If (W - UBound(dest)) > 0 Then
                 'ReDim dest(W, H)
                 ReDim dest(W)
             End If
@@ -105,7 +105,10 @@ Private Sub pvArrCopyLong(dest() As Long, Src() As Long)
 
         If pvArrayExists(ArrPtr(dest)) Then
             '        If (W - UBound(dest, 1)) Or (H - UBound(dest, 2)) Then
-            If (W - UBound(dest, 1)) Then
+            If (W - UBound(dest)) > 0 Then
+'            Debug.Print W
+'            Stop
+            
                 'ReDim dest(W, H)
                 ReDim dest(W)
             End If
