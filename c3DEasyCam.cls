@@ -229,14 +229,16 @@ Friend Sub PointToScreenCoords(ByVal X As Double, ByVal Y As Double, ByVal Z As 
     S = Vec3(X, Y, Z)
     S = DIFF3(S, mPosition)
 
-    P.X = DOT3(S, camRIGHT)
-    P.Y = DOT3(S, camUP)
-    P.Z = DOT3(S, camFRONT)
+    With P
+        .X = DOT3(S, camRIGHT)
+        .Y = DOT3(S, camUP)
+        .Z = DOT3(S, camFRONT)
 
-    InvZ = 1 / P.Z
-    rX = P.X * InvZ * mZOOM * mScreenCenter.X + mScreenCenter.X
-    rY = P.Y * InvZ * mZOOM * mScreenCenter.X + mScreenCenter.Y
-    rZ = P.Z    ' if its negative point is behind camera
+        InvZ = 1# / .Z
+        rX = .X * InvZ * mZOOM * mScreenCenter.X + mScreenCenter.X
+        rY = .Y * InvZ * mZOOM * mScreenCenter.X + mScreenCenter.Y
+        rZ = .Z              ' if its negative point is behind camera
+    End With
 
 End Sub
 
@@ -341,7 +343,7 @@ End Function
 Friend Function IsPointVisibleGap(V As tVec3, Gap As Double) As Boolean
 
     With V
-        If .Z < 0 Then Exit Function    ' behind
+        If .Z < 0# Then Exit Function    ' behind
         If .Z - Gap > mFarPlaneDist Then Exit Function   ' too far
 
         If .X < -Gap Then Exit Function    ' check if outside screen

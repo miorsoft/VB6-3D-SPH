@@ -465,6 +465,7 @@ Public Sub MainLoop()
     Dim ppp       As Double
 
 
+
     DrawR = H * 0.12
 
     '''OLDPointToScreen    If DrawR < 1.5 Then DrawR = 1.5
@@ -587,14 +588,15 @@ Public Sub MainLoop()
                 If NP > UBound(DistFromCamera) Then ReDim DistFromCamera(NP)
                 For I = 1 To NP
                     DrawOrderIDX(I) = I
-
                     'OK ! Project camera to point vector to CamNormFrontDIR (Front camera Vector)
                     'DistFromCamera(I) = dot3(DIFF3(Camera.position, Vec3(pX(I), pY(I), pZ(I))), CamNormFrontDIR) 'Camera V3
-
                     'Camera V4
-                    DistFromCamera(I) = DOT3(DIFF3(CAMERA.Position, Vec3(pX(I), pY(I), pZ(I))), CAMERA.Direction)
-
+                    'DistFromCamera(I) = DOT3(DIFF3(CAMERA.Position, Vec3(pX(I), pY(I), pZ(I))), CAMERA.Direction)
+                    With DIFF3(CAMERA.Position, Vec3(pX(I), pY(I), pZ(I)))
+                    DistFromCamera(I) = -(.X * .X + .Y * .Y + .Z * .Z)
+                    End With
                 Next
+                
                 QuickSortSingle2 DistFromCamera(), DrawOrderIDX(), 0, NP
                 ' END DRAW ORDER -------
 
@@ -619,13 +621,15 @@ Public Sub MainLoop()
 
                             '.SetSourceRGBA 0.015 + V, 0.5 + V, 0.6 + V, 0.8  '0.7  '(V 5)
 
-                            .SetSourceRGBA 0.015 + V, 0.5 + V, 0.6 + V, 0.95
+                            '.SetSourceRGBA 0.015 + V, 0.5 + V, 0.6 + V, 0.95
+                            .SetSourceRGB 0.015 + V, 0.5 + V, 0.6 + V
 
                         Else
                             '.SetSourceRGBA 0.2 + V, 0.7 + V, 0.2 + V, 0.7
 
                             ' .SetSourceRGBA 0.15 + V, 0.6 + V, 0.15 + V, 0.8
-                            .SetSourceRGBA 0.1 + V, 0.5 + V, 0.1 + V, 0.95
+                            '.SetSourceRGBA 0.1 + V, 0.5 + V, 0.1 + V, 0.95
+                            .SetSourceRGB 0.1 + V, 0.5 + V, 0.1 + V
 
                         End If
 
@@ -745,8 +749,7 @@ Public Sub MainLoop()
 
 
 If CamRot Then
- RecomputeBOX = True
-
+RecomputeBOX = True
 CAMERA.SetPositionAndLookAt Vec3(WW * 0.5 + Cos(CNT * 0.0007) * 520, HH * 0.5, ZZ * 0.5 + Sin(CNT * 0.0007) * 520), Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5)
 End If
 

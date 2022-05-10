@@ -77,6 +77,7 @@ Public Sub QuickSortSingle2(Dist() As Double, OtherInfo() As Long, ByVal min As 
         Dist(lo) = Dist(hi)
         OtherInfo(lo) = OtherInfo(hi)
         lo = lo + 1
+        
         Do While Dist(lo) < med_value
             lo = lo + 1
             If lo >= hi Then Exit Do
@@ -87,7 +88,6 @@ Public Sub QuickSortSingle2(Dist() As Double, OtherInfo() As Long, ByVal min As 
             OtherInfo(hi) = med_OtherInfo
             Exit Do
         End If
-
         ' Swap the lo and hi values.
         Dist(hi) = Dist(lo)
         OtherInfo(hi) = OtherInfo(lo)
