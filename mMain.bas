@@ -101,6 +101,7 @@ Public COMx       As Double
 Public COMy       As Double
 Public COMz       As Double
 
+Public CamRot As Boolean
 
 Public Sub SPH_InitConst()
     Dim R         As Double
@@ -120,7 +121,7 @@ Public Sub SPH_InitConst()
     kernelWeight = kernelWeight / I
 
     INVRestDensity = 1 / RestDensity
-    PressureLimit = 100    '50    '45 '20
+    PressureLimit = 400 '200 '100    '50    '45 '20
 
     DT = 0.25
     invDT = 1 / DT
@@ -145,21 +146,21 @@ End Sub
 Public Sub SPH_MOVE()
     Dim I         As Long
 
-    Const kRestitution As Double = 0.85
+    Const kRestitution As Double = 0.66 ' 0.85
     Const kFakeDensity As Double = 0.3
     Const kFakeVel As Double = 0.005
 
 
 
     Dim invNP     As Double
-    Dim dx        As Double
+    Dim DX        As Double
     Dim DY        As Double
-    Dim dz        As Double
+    Dim DZ        As Double
     Dim D         As Double
     Dim F         As Double
 
-    Dim wwH!, hhH!, zzH!
-    Dim S!
+    Dim wwH#, hhH#, zzH#
+    Dim S#
 
     wwH = WW - H
     hhH = HH - H
@@ -171,13 +172,13 @@ Public Sub SPH_MOVE()
         vY(I) = vY(I) + VYChange(I) + gY * DT
         vZ(I) = vZ(I) + VZChange(I) + gZ * DT
 
-        VXChange(I) = 0!
-        VYChange(I) = 0!
-        VZChange(I) = 0!
+        VXChange(I) = 0#
+        VYChange(I) = 0#
+        VZChange(I) = 0#
 
-        vX(I) = vX(I) * 0.999     ' 0.998!
-        vY(I) = vY(I) * 0.999     ' 0.998!
-        vZ(I) = vZ(I) * 0.999     ' 0.998!
+        vX(I) = vX(I) * 0.999     ' 0.998#
+        vY(I) = vY(I) * 0.999     ' 0.998#
+        vZ(I) = vZ(I) * 0.999     ' 0.998#
 
         pX(I) = pX(I) + vX(I) * DT
         pY(I) = pY(I) + vY(I) * DT
@@ -186,9 +187,9 @@ Public Sub SPH_MOVE()
 
         Density(I) = 0
 
-        If pX(I) < 0! Then pX(I) = -pX(I): vX(I) = -vX(I) * kRestitution
-        If pY(I) < 0! Then pY(I) = -pY(I): vY(I) = -vY(I) * kRestitution
-        If pZ(I) < 0! Then pZ(I) = -pZ(I): vZ(I) = -vZ(I) * kRestitution
+        If pX(I) < 0# Then pX(I) = -pX(I): vX(I) = -vX(I) * kRestitution
+        If pY(I) < 0# Then pY(I) = -pY(I): vY(I) = -vY(I) * kRestitution
+        If pZ(I) < 0# Then pZ(I) = -pZ(I): vZ(I) = -vZ(I) * kRestitution
 
         If pX(I) > WW Then pX(I) = WW - (pX(I) - WW): vX(I) = -vX(I) * kRestitution
         If pY(I) > HH Then pY(I) = HH - (pY(I) - HH): vY(I) = -vY(I) * kRestitution
@@ -230,15 +231,15 @@ Public Sub SPH_MOVE()
         COMz = COMz * invNP
 
         For I = 1 To NP
-            dx = pX(I) - COMx
+            DX = pX(I) - COMx
             DY = pY(I) - COMy
-            dz = pZ(I) - COMz
-            D = dx * dx + DY * DY + dz * dz
+            DZ = pZ(I) - COMz
+            D = DX * DX + DY * DY + DZ * DZ
             D = 1 / (1 + D)
             F = D * GravScale * NP * 0.0002
-            vX(I) = vX(I) - dx * F
+            vX(I) = vX(I) - DX * F
             vY(I) = vY(I) - DY * F
-            vZ(I) = vZ(I) - dz * F
+            vZ(I) = vZ(I) - DZ * F
         Next
     End If
 
@@ -253,9 +254,9 @@ Public Sub SPH_ComputePAIRS()
     Dim D         As Double
     Dim I         As Long
     Dim J         As Long
-    Dim dx        As Double
+    Dim DX        As Double
     Dim DY        As Double
-    Dim dz        As Double
+    Dim DZ        As Double
 
     Dim NormalizedDX As Double
     Dim NormalizedDY As Double
@@ -312,7 +313,7 @@ Public Sub SPH_ComputePAIRS()
             Pressure(I) = -PressureLimit
         End If
         'Reset Density
-        '        Density(I) = 0!  'move to SPH_MOVE
+        '        Density(I) = 0#  'move to SPH_MOVE
 
         If Density(I) > 0.001 Then
             INVDensity(I) = 1 / (Density(I))
@@ -320,7 +321,7 @@ Public Sub SPH_ComputePAIRS()
             '            INVDensity(I) = 1 / (Density(I) * Density(I))
 
         Else
-            INVDensity(I) = 0!
+            INVDensity(I) = 0#
         End If
 
     Next
@@ -333,21 +334,21 @@ Public Sub SPH_ComputePAIRS()
         I = P1(pair)
         J = P2(pair)
 
-        dx = arrDX(pair)
+        DX = arrDX(pair)
         DY = arrDY(pair)
-        dz = arrDZ(pair)
+        DZ = arrDZ(pair)
 
         D = arrD(pair)
 
         If D Then
 
             R = D * invH    ' the distance between particles in range 0-1
-            OmR = 1! - R
+            OmR = 1# - R
 
-            InvD = 1! / D
-            NormalizedDX = dx * InvD
+            InvD = 1# / D
+            NormalizedDX = DX * InvD
             NormalizedDY = DY * InvD
-            NormalizedDZ = dz * InvD
+            NormalizedDZ = DZ * InvD
 
             '----------------------------------------------------------------
 
@@ -400,11 +401,11 @@ Public Sub SPH_ComputePAIRS()
                 ''                ' Without Densities sum division (1st Version)
                 ''                vDX = vX(J) - vX(I)
                 ''                vDY = vY(J) - vY(I)
-                ''                K = -0.5! * r * r * r + r * r + 0.5! * InvD * H - 1!
+                ''                K = -0.5# * r * r * r + r * r + 0.5# * InvD * H - 1#
                 ''                K = K * KViscosity
                 ''                'particles are Separating  ?
-                ''                If (dX * vDX + dY * vDY) < 0! Then K = K * 0.005!               '025!
-                ''                If K > 1! Then K = 1!
+                ''                If (dX * vDX + dY * vDY) < 0# Then K = K * 0.005#               '025#
+                ''                If K > 1# Then K = 1#
                 ''                iX = vDX * K
                 ''                iY = vDY * K
                 ''                VXcI = VXcI + iX
@@ -415,14 +416,14 @@ Public Sub SPH_ComputePAIRS()
                 ' <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  VISCOSITY 2
                 ' Inverse proportional to Densities Sum
                 ' K = KViscosity * OmR * OmR
-                ' K = -0.5! * r * r * r + r * r + 1! / (2! * r) - 1!
+                ' K = -0.5# * r * r * r + r * r + 1# / (2# * r) - 1#
                 ' Same but without division:
 
                 vDX = vX(J) - vX(I)
                 vDY = vY(J) - vY(I)
                 vDZ = vZ(J) - vZ(I)
 
-                K = -0.5 * R * R * R + R * R + 0.5 * InvD * H - 1!
+                K = -0.5 * R * R * R + R * R + 0.5 * InvD * H - 1#
                 K = K * KViscosity
 
                 ' MODE 2 -----------<<<<<<< difference from above
@@ -431,7 +432,7 @@ Public Sub SPH_ComputePAIRS()
 
 
                 'particles are Separating  ?
-                If (dx * vDX + DY * vDY + dz * vDZ) < 0! Then K = K * 0.001            '025!
+                If (DX * vDX + DY * vDY + DZ * vDZ) < 0# Then K = K * 0.001            '025#
                 If K > 0.5 Then K = 0.5
                 iX = vDX * K
                 iY = vDY * K
@@ -446,7 +447,7 @@ Public Sub SPH_ComputePAIRS()
                 VZcJ = VZcJ - IZ
 
             Else
-                K = OmR * OmR * KAttraction * 26!
+                K = OmR * OmR * KAttraction * 26#
                 iX = NormalizedDX * K
                 iY = NormalizedDY * K
                 IZ = NormalizedDZ * K
@@ -493,21 +494,21 @@ End Sub
 
 
 Private Function SmoothKernel_1(ByVal R As Double) As Double
-    SmoothKernel_1 = 1! - R * R * (3! - 2! * R)
+    SmoothKernel_1 = 1# - R * R * (3# - 2# * R)
 End Function
 
 Private Function SmoothKernel_2(ByVal R As Double) As Double
 'A new kernel function for SPH with applications to free surfaceflowsqX.F. Yanga, S.L. Pengb, M.B. Liu
-    SmoothKernel_2 = (4! * Cos(PI * R) + Cos(PI2 * R) + 3!) * 0.125
+    SmoothKernel_2 = (4# * Cos(PI * R) + Cos(PI2 * R) + 3#) * 0.125
 End Function
 
 Public Function SmoothKernel_3(ByVal R As Double) As Double
 'http://www.astro.lu.se/~david/teaching/SPH/notes/annurev.aa.30.090192.pdf
-    R = R * 2!
-    If R <= 1! Then
-        SmoothKernel_3 = 1! - 1.5 * R * R + 0.75 * R * R * R
+    R = R * 2#
+    If R <= 1# Then
+        SmoothKernel_3 = 1# - 1.5 * R * R + 0.75 * R * R * R
     Else
-        R = 2! - R
+        R = 2# - R
         SmoothKernel_3 = 0.25 * R * R * R
     End If
 End Function

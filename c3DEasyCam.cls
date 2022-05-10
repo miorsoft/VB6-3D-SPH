@@ -32,9 +32,9 @@ Private Const Rad2Deg As Double = 57.2957795130823      'Radians to Degrees
 Private mPosition As tVec3    'Camera Position
 Private mLookAt   As tVec3    'Camera LookAT
 Private mScreenCenter As tVec3    'Center coords of screen
-Private camRIGHT     As tVec3    'Cam Matrix
+Private camRIGHT  As tVec3    'Cam Matrix
 Private camUP     As tVec3
-Private camFRONT     As tVec3
+Private camFRONT  As tVec3
 Private mVectorUP As tVec3    'Vector UP
 Private mNearPlaneDist As Double
 Private mFarPlaneDist As Double
@@ -45,8 +45,8 @@ Private mYaw      As Double
 Private mZOOM     As Double
 
 
-Friend Property Let Position(v As tVec3)
-    mPosition = v
+Friend Property Let Position(V As tVec3)
+    mPosition = V
     UPDATE
 End Property
 
@@ -54,8 +54,8 @@ Friend Property Get Position() As tVec3
     Position = mPosition
 End Property
 
-Friend Property Let lookat(v As tVec3)
-    mLookAt = v
+Friend Property Let lookat(V As tVec3)
+    mLookAt = V
     UPDATE
 End Property
 
@@ -90,24 +90,24 @@ Friend Sub GetRotation(ByRef Yaw As Double, ByRef Pitch As Double)
     Yaw = mYaw
 End Sub
 
-Friend Property Let Zoom(v As Double)
-    mZOOM = v
+Friend Property Let Zoom(V As Double)
+    mZOOM = V
 End Property
 
 Friend Property Get Zoom() As Double
     Zoom = mZOOM
 End Property
 
-Friend Property Let FarPlane(v As Double)
-    mFarPlaneDist = v
+Friend Property Let FarPlane(V As Double)
+    mFarPlaneDist = V
 End Property
 
 Friend Property Get FarPlane() As Double
     FarPlane = mFarPlaneDist
 End Property
 
-Friend Property Let NearPlane(v As Double)
-    mNearPlaneDist = v
+Friend Property Let NearPlane(V As Double)
+    mNearPlaneDist = V
 End Property
 
 Friend Property Get NearPlane() As Double
@@ -124,7 +124,7 @@ Friend Sub Init(CameraFrom As tVec3, CameraTo As tVec3, ScreenCenter As tVec3, U
     mFarPlaneDist = 1E+32
 
     mZOOM = 1
-
+    
     UPDATE
 End Sub
 
@@ -146,9 +146,9 @@ Private Sub UPDATE(Optional UpdatePitchYawValues As Boolean = False)
     camUP = Normalize3(CROSS3(camFRONT, camRIGHT))
 
 
-'Debug.Print ToString3(camFRONT)
-'Debug.Print ToString3(camRIGHT)
-'Debug.Print ToString3(camUP)
+    'Debug.Print ToString3(camFRONT)
+    'Debug.Print ToString3(camRIGHT)
+    'Debug.Print ToString3(camUP)
 
 
 
@@ -200,46 +200,43 @@ Public Sub SetRotation(ByVal Yaw As Double, ByVal Pitch As Double)
 End Sub
 
 Friend Function PointToScreenWDCam(WorldPos As tVec3, ProjectedDistFromCam As Double) As tVec3
-    Dim p         As tVec3
+    Dim P         As tVec3
     Dim S         As tVec3
     Dim IZ        As Double
 
     S = DIFF3(WorldPos, mPosition)
 
-    p.X = DOT3(S, camRIGHT)
-    p.Y = DOT3(S, camUP)
-    p.Z = DOT3(S, camFRONT)
+    P.X = DOT3(S, camRIGHT)
+    P.Y = DOT3(S, camUP)
+    P.Z = DOT3(S, camFRONT)
 
 
-    IZ = 1 / p.Z * mZOOM
-    PointToScreenWDCam.X = p.X * IZ * mScreenCenter.X + mScreenCenter.X
-    PointToScreenWDCam.Y = p.Y * IZ * mScreenCenter.X + mScreenCenter.Y
+    IZ = 1 / P.Z * mZOOM
+    PointToScreenWDCam.X = P.X * IZ * mScreenCenter.X + mScreenCenter.X
+    PointToScreenWDCam.Y = P.Y * IZ * mScreenCenter.X + mScreenCenter.Y
 
     PointToScreenWDCam.Z = IZ    ' if its negative point is behind camera
-    ProjectedDistFromCam = p.Z  ' if its negative point is behind camera
+    ProjectedDistFromCam = P.Z  ' if its negative point is behind camera
 
 End Function
 
 Friend Sub PointToScreenCoords(ByVal X As Double, ByVal Y As Double, ByVal Z As Double, _
                                rX As Double, rY As Double, rZ As Double, InvZ As Double)
     Dim S         As tVec3
-    Dim p         As tVec3
+    Dim P         As tVec3
     '    Dim InvZ        As Double
 
     S = Vec3(X, Y, Z)
     S = DIFF3(S, mPosition)
 
-    p.X = DOT3(S, camRIGHT)
-    p.Y = DOT3(S, camUP)
-    p.Z = DOT3(S, camFRONT)
+    P.X = DOT3(S, camRIGHT)
+    P.Y = DOT3(S, camUP)
+    P.Z = DOT3(S, camFRONT)
 
-
-
-    InvZ = 1 / p.Z
-    rX = p.X * InvZ * mZOOM * mScreenCenter.X + mScreenCenter.X
-    rY = p.Y * InvZ * mZOOM * mScreenCenter.X + mScreenCenter.Y
-
-    rZ = p.Z    ' if its negative point is behind camera
+    InvZ = 1 / P.Z
+    rX = P.X * InvZ * mZOOM * mScreenCenter.X + mScreenCenter.X
+    rY = P.Y * InvZ * mZOOM * mScreenCenter.X + mScreenCenter.Y
+    rZ = P.Z    ' if its negative point is behind camera
 
 End Sub
 
@@ -281,7 +278,7 @@ Friend Sub LineToScreen(P1 As tVec3, P2 As tVec3, Ret1 As tVec3, Ret2 As tVec3, 
     End If
 
 
-'Same for FAR PLANE
+    'Same for FAR PLANE
     If DfromCam1 > mFarPlaneDist Then
 
         If DfromCam2 > mFarPlaneDist Then Exit Sub    'Both points Too far from camera so EXIT
@@ -325,9 +322,9 @@ Friend Function IsPointVisibleCoords(ByVal X As Double, ByVal Y As Double, ByVal
 End Function
 
 
-Friend Function IsPointVisible(v As tVec3) As Boolean
+Friend Function IsPointVisible(V As tVec3) As Boolean
 
-    With v
+    With V
         If .Z < 0 Then Exit Function    ' behind
         If .Z > mFarPlaneDist Then Exit Function     ' too far
 
@@ -341,9 +338,9 @@ Friend Function IsPointVisible(v As tVec3) As Boolean
 
 End Function
 
-Friend Function IsPointVisibleGap(v As tVec3, Gap As Double) As Boolean
+Friend Function IsPointVisibleGap(V As tVec3, Gap As Double) As Boolean
 
-    With v
+    With V
         If .Z < 0 Then Exit Function    ' behind
         If .Z - Gap > mFarPlaneDist Then Exit Function   ' too far
 

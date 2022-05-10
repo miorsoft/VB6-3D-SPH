@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin VB.Form fMain 
    Caption         =   "3D smoothed particles hydrodynamics"
-   ClientHeight    =   9780
+   ClientHeight    =   10230
    ClientLeft      =   120
    ClientTop       =   420
    ClientWidth     =   15120
@@ -15,11 +15,19 @@ Begin VB.Form fMain
       Strikethrough   =   0   'False
    EndProperty
    LinkTopic       =   "Form1"
-   ScaleHeight     =   652
+   ScaleHeight     =   682
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   1008
    StartUpPosition =   1  'CenterOwner
    WindowState     =   2  'Maximized
+   Begin VB.CheckBox chkRot 
+      Caption         =   "Rotate CAM"
+      Height          =   495
+      Left            =   12360
+      TabIndex        =   18
+      Top             =   9720
+      Width           =   1695
+   End
    Begin VB.CommandButton cmdErase 
       Caption         =   "Clean 2"
       Height          =   375
@@ -263,8 +271,9 @@ Private Sub chkRG_Click()
     rndGravity = chkRG.Value = vbChecked
 End Sub
 
-
-
+Private Sub chkRot_Click()
+CamRot = chkRot.Value = vbChecked
+End Sub
 
 Private Sub cmdErase_Click(Index As Integer)
     Dim I&, J&
@@ -422,7 +431,7 @@ Public Sub MainLoop()
     Dim J         As Long
 
 
-    Dim v         As Double
+    Dim V         As Double
     Dim OnP       As String
 
     Dim X         As Double
@@ -531,7 +540,9 @@ Public Sub MainLoop()
 
         If (CNT And RenderEvery) = 0& Then
             With SRF.CreateContext
-                .AntiAlias = CAIRO_ANTIALIAS_SUBPIXEL
+                '.AntiAlias = CAIRO_ANTIALIAS_SUBPIXEL
+                .AntiAlias = CAIRO_ANTIALIAS_FAST
+                
 
                 .SetSourceColor 0
                 .Paint
@@ -592,7 +603,7 @@ Public Sub MainLoop()
                     J = DrawOrderIDX(I)
 
                     'V = Pressure(J) * 0.075
-                    v = Pressure(J) * 0.15   'V5
+                    V = Pressure(J) * 0.15   'V5
 
                     CAMERA.PointToScreenCoords pX(J), pY(J), pZ(J), X, Y, Z, InvZ
                     'If Z > 0 Then
@@ -608,13 +619,13 @@ Public Sub MainLoop()
 
                             '.SetSourceRGBA 0.015 + V, 0.5 + V, 0.6 + V, 0.8  '0.7  '(V 5)
 
-                            .SetSourceRGBA 0.015 + v, 0.5 + v, 0.6 + v, 0.95
+                            .SetSourceRGBA 0.015 + V, 0.5 + V, 0.6 + V, 0.95
 
                         Else
                             '.SetSourceRGBA 0.2 + V, 0.7 + V, 0.2 + V, 0.7
 
                             ' .SetSourceRGBA 0.15 + V, 0.6 + V, 0.15 + V, 0.8
-                            .SetSourceRGBA 0.1 + v, 0.5 + v, 0.1 + v, 0.95
+                            .SetSourceRGBA 0.1 + V, 0.5 + V, 0.1 + V, 0.95
 
                         End If
 
@@ -731,6 +742,15 @@ Public Sub MainLoop()
             OnP = Format$(RetNofPairs, "###,###,###")
         End If
 
+
+
+If CamRot Then
+ RecomputeBOX = True
+
+CAMERA.SetPositionAndLookAt Vec3(WW * 0.5 + Cos(CNT * 0.0007) * 520, HH * 0.5, ZZ * 0.5 + Sin(CNT * 0.0007) * 520), Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5)
+End If
+
+
         FauxDoEvents
 
     Loop While DoLOOP
@@ -760,9 +780,9 @@ Private Sub PIC_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As
     Dim Yaw       As Double
 
 
-    Static x0!, y0!, dx!, DY!
+    Static x0!, y0!, DX!, DY!
 
-    dx = X - x0: DY = Y - y0
+    DX = X - x0: DY = Y - y0
 
 
     Select Case Button
@@ -774,7 +794,7 @@ Private Sub PIC_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As
 
         'Left hand
         Pitch = Pitch - 0.25 * DY
-        Yaw = (Yaw + 0.25 * dx)
+        Yaw = (Yaw + 0.25 * DX)
         '        Right Hand
         '        Pitch = Pitch - 0.25 * DY
         '        Yaw = (Yaw + 0.25 * dx)

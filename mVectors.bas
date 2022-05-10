@@ -5,7 +5,7 @@ Public Const PI   As Double = 3.14159265358979
 Public Const InvPI As Double = 1 / 3.14159265358979
 
 Public Const PIh  As Double = 1.5707963267949
-Public Const PI2  As Double = 6.8318530717959
+Public Const PI2  As Double = 6.28318530717959
 
 
 'Pade Approximant-----------****************************************
@@ -46,10 +46,20 @@ End Type
 
 Public Function Atan2(ByVal X As Double, ByVal Y As Double) As Double
     If X Then
-        Atan2 = -PI + Atn(Y / X) - (X > 0!) * PI
+'        Stop
+'        Atan2 = -PI + Atn(Y / X) - (X > 0!) * PI
+'        Stop
+        Atan2 = Atn(Y / X) + PI * (X < 0!)
     Else
         Atan2 = -PIh - (Y > 0!) * PI
     End If
+End Function
+
+Public Function ArcCos(X As Double) As Double
+    ArcCos = Atn(-X / Sqr(-X * X + 1)) + PIh
+End Function
+Public Function ArcSin(ByVal X As Single) As Single
+    ArcSin = Atn(X / Sqr(-X * X + 1))
 End Function
 
 Public Function Vec3(X As Double, Y As Double, Z As Double) As tVec3
@@ -58,53 +68,53 @@ Public Function Vec3(X As Double, Y As Double, Z As Double) As tVec3
     Vec3.Z = Z
 End Function
 
-Public Function Length3(v As tVec3) As Double
-    With v
+Public Function Length3(V As tVec3) As Double
+    With V
         Length3 = Sqr(.X * .X + .Y * .Y + .Z * .Z)
     End With
 End Function
 
-Public Function Length32(v As tVec3) As Double
-    With v
+Public Function Length32(V As tVec3) As Double
+    With V
         Length32 = .X * .X + .Y * .Y + .Z * .Z
     End With
 End Function
 
 
 
-Public Function SUM3(v1 As tVec3, V2 As tVec3) As tVec3
-    SUM3.X = v1.X + V2.X
-    SUM3.Y = v1.Y + V2.Y
-    SUM3.Z = v1.Z + V2.Z
+Public Function SUM3(V1 As tVec3, V2 As tVec3) As tVec3
+    SUM3.X = V1.X + V2.X
+    SUM3.Y = V1.Y + V2.Y
+    SUM3.Z = V1.Z + V2.Z
 End Function
 
 
 
-Public Function Normalize3(v As tVec3) As tVec3
+Public Function Normalize3(V As tVec3) As tVec3
     Dim D         As Double
 
-    D = (v.X * v.X + v.Y * v.Y + v.Z * v.Z)
+    D = (V.X * V.X + V.Y * V.Y + V.Z * V.Z)
     If D Then
         D = 1# / Sqr(D)
-        Normalize3.X = v.X * D
-        Normalize3.Y = v.Y * D
-        Normalize3.Z = v.Z * D
+        Normalize3.X = V.X * D
+        Normalize3.Y = V.Y * D
+        Normalize3.Z = V.Z * D
     End If
 
 End Function
 
-Public Function MUL3(v As tVec3, ByVal A As Double) As tVec3
-    MUL3.X = v.X * A
-    MUL3.Y = v.Y * A
-    MUL3.Z = v.Z * A
+Public Function MUL3(V As tVec3, ByVal A As Double) As tVec3
+    MUL3.X = V.X * A
+    MUL3.Y = V.Y * A
+    MUL3.Z = V.Z * A
 
 End Function
 
-Public Function DOT3(v1 As tVec3, V2 As tVec3) As Double
+Public Function DOT3(V1 As tVec3, V2 As tVec3) As Double
 
-    DOT3 = (v1.X * V2.X) + _
-           (v1.Y * V2.Y) + _
-           (v1.Z * V2.Z)
+    DOT3 = (V1.X * V2.X) + _
+           (V1.Y * V2.Y) + _
+           (V1.Z * V2.Z)
 
 End Function
 
@@ -128,38 +138,38 @@ Public Function WEDGE3(A As tVec3, B As tVec3) As tVec3    'BiVector
 End Function
 
 
-Public Function DIFF3(v1 As tVec3, V2 As tVec3) As tVec3
-    DIFF3.X = v1.X - V2.X
-    DIFF3.Y = v1.Y - V2.Y
-    DIFF3.Z = v1.Z - V2.Z
+Public Function DIFF3(V1 As tVec3, V2 As tVec3) As tVec3
+    DIFF3.X = V1.X - V2.X
+    DIFF3.Y = V1.Y - V2.Y
+    DIFF3.Z = V1.Z - V2.Z
 End Function
 
 
-Public Function Project3(v As tVec3, V2nrmlzd As tVec3) As tVec3
-    
-    Project3 = MUL3(V2nrmlzd, DOT3(v, V2nrmlzd))
+Public Function Project3(V As tVec3, V2nrmlzd As tVec3) As tVec3
+
+    Project3 = MUL3(V2nrmlzd, DOT3(V, V2nrmlzd))
 
 End Function
 
 
-Public Function ProjectToPlane3(v As tVec3, PlaneN As tVec3) As tVec3
+Public Function ProjectToPlane3(V As tVec3, PlaneN As tVec3) As tVec3
     Dim DOT       As Double
-' unsure !
-    ProjectToPlane3 = DIFF3(v, Project3(v, PlaneN))
-'https://www.physicsforums.com/threads/projecting-a-vector-onto-a-plane.496184/
-'Project3 = CROSS3(V2nrmlzd, CROSS3(v, V2nrmlzd))
+    ' unsure !
+    ProjectToPlane3 = DIFF3(V, Project3(V, PlaneN))
+    'https://www.physicsforums.com/threads/projecting-a-vector-onto-a-plane.496184/
+    'Project3 = CROSS3(V2nrmlzd, CROSS3(v, V2nrmlzd))
 End Function
 
 
 
 
-Public Function Rotate3(p As tVec3, Direc As tVec3) As tVec3
+Public Function Rotate3(P As tVec3, Direc As tVec3) As tVec3
 
 ' TO TEST and ADJUST
 'Stop
 
     Dim U         As tVec3
-    Dim v         As tVec3
+    Dim V         As tVec3
     Dim W         As tVec3
 
     Dim R         As tRotor3
@@ -172,20 +182,20 @@ Public Function Rotate3(p As tVec3, Direc As tVec3) As tVec3
     Dim PL2       As tVec3
     Dim PL3       As tVec3
     Dim D         As tVec3
-    
-    
-    
-    
+
+
+
+
     D = Normalize3(Direc)
-'    D = MUL3(D, -1)
-    
-    
-        Rotate3 = Rotate3yz(p, D)
+    '    D = MUL3(D, -1)
+
+
+    Rotate3 = Rotate3yz(P, D)
     Rotate3 = Rotate3xy(Rotate3, D)
 
-    
-    
-    
+
+
+
     '    D = Normalize3(Direc)
     '
     '    A = MUL3(D, 1)
@@ -243,8 +253,8 @@ End Function
 
 
 
-Public Function ToString3(v As tVec3) As String
-    ToString3 = v.X & "   " & v.Y & "   " & v.Z
+Public Function ToString3(V As tVec3) As String
+    ToString3 = V.X & "   " & V.Y & "   " & V.Z
 End Function
 
 
@@ -297,41 +307,41 @@ End Function
 
 
 
-Public Function Rotate3xz(v As tVec3, DirectionXZ As tVec3) As tVec3
+Public Function Rotate3xz(V As tVec3, DirectionXZ As tVec3) As tVec3
 
 
 ' Corrected ONE:
 'http://www.vbforums.com/showthread.php?874965-Rotation-using-DOT-product
 
-    Rotate3xz.X = DOT3(v, Vec3(DirectionXZ.X, 0, -DirectionXZ.Z))
+    Rotate3xz.X = DOT3(V, Vec3(DirectionXZ.X, 0, -DirectionXZ.Z))
     'Rotate3xz.Y = V.Y * 1
-    Rotate3xz.Y = DOT3(v, Vec3(0, 1, 0))
-    Rotate3xz.Z = DOT3(v, Vec3(DirectionXZ.Z, 0, DirectionXZ.X))
+    Rotate3xz.Y = DOT3(V, Vec3(0, 1, 0))
+    Rotate3xz.Z = DOT3(V, Vec3(DirectionXZ.Z, 0, DirectionXZ.X))
 
 End Function
 
 
-Public Function Rotate3xy(v As tVec3, DirectionXY As tVec3) As tVec3
+Public Function Rotate3xy(V As tVec3, DirectionXY As tVec3) As tVec3
 
-    Rotate3xy.X = DOT3(v, Vec3(DirectionXY.X, DirectionXY.Y, 0))
-    Rotate3xy.Y = DOT3(v, Vec3(-DirectionXY.Y, DirectionXY.X, 0))
-    Rotate3xy.Z = DOT3(v, Vec3(0, 0, 1))
-
-End Function
-
-Public Function Rotate3yz(v As tVec3, DirectionYZ As tVec3) As tVec3
-
-    Rotate3yz.X = DOT3(v, Vec3(1, 0, 0))
-    Rotate3yz.Y = DOT3(v, Vec3(0, DirectionYZ.Y, DirectionYZ.Z))
-    Rotate3yz.Z = DOT3(v, Vec3(0, -DirectionYZ.Z, DirectionYZ.Y))
+    Rotate3xy.X = DOT3(V, Vec3(DirectionXY.X, DirectionXY.Y, 0))
+    Rotate3xy.Y = DOT3(V, Vec3(-DirectionXY.Y, DirectionXY.X, 0))
+    Rotate3xy.Z = DOT3(V, Vec3(0, 0, 1))
 
 End Function
 
-Public Function Rotate3zx(v As tVec3, DirectionZX As tVec3) As tVec3
+Public Function Rotate3yz(V As tVec3, DirectionYZ As tVec3) As tVec3
 
-    Rotate3zx.Z = DOT3(v, Vec3(0, DirectionZX.X, DirectionZX.Z))
-    Rotate3zx.Y = DOT3(v, Vec3(0, 1, 0))
-    Rotate3zx.X = DOT3(v, Vec3(0, -DirectionZX.Z, DirectionZX.X))
+    Rotate3yz.X = DOT3(V, Vec3(1, 0, 0))
+    Rotate3yz.Y = DOT3(V, Vec3(0, DirectionYZ.Y, DirectionYZ.Z))
+    Rotate3yz.Z = DOT3(V, Vec3(0, -DirectionYZ.Z, DirectionYZ.Y))
+
+End Function
+
+Public Function Rotate3zx(V As tVec3, DirectionZX As tVec3) As tVec3
+
+    Rotate3zx.Z = DOT3(V, Vec3(0, DirectionZX.X, DirectionZX.Z))
+    Rotate3zx.Y = DOT3(V, Vec3(0, 1, 0))
+    Rotate3zx.X = DOT3(V, Vec3(0, -DirectionZX.Z, DirectionZX.X))
 
 
 End Function
@@ -354,11 +364,11 @@ Public Function RayPlaneIntersect(rayVector As tVec3, rayPoint As tVec3, PlaneNo
 End Function
 
 
-Public Function XZPerp(v As tVec3) As tVec3
+Public Function XZPerp(V As tVec3) As tVec3
 'LHR
-    XZPerp.X = v.Z
-    XZPerp.Y = v.Y
-    XZPerp.Z = -v.X
+    XZPerp.X = V.Z
+    XZPerp.Y = V.Y
+    XZPerp.Z = -V.X
 
     ''Right Hand
     '    XZPerp.X = -v.Z
@@ -381,17 +391,17 @@ End Function
 
 
 Public Function Rotor3Normalize(R As tRotor3) As tRotor3
-    Dim l         As Double
+    Dim L         As Double
 
     With R
-        l = .A * .A + .b01 * .b01 + .b02 * .b02 + .b12 * .b12
+        L = .A * .A + .b01 * .b01 + .b02 * .b02 + .b12 * .b12
 
-        If l Then
-            l = 1 / Sqr(l)
-            Rotor3Normalize.A = .A * l
-            Rotor3Normalize.b01 = .b01 * l
-            Rotor3Normalize.b02 = .b02 * l
-            Rotor3Normalize.b12 = .b12 * l
+        If L Then
+            L = 1 / Sqr(L)
+            Rotor3Normalize.A = .A * L
+            Rotor3Normalize.b01 = .b01 * L
+            Rotor3Normalize.b02 = .b02 * L
+            Rotor3Normalize.b12 = .b12 * L
         End If
 
     End With
@@ -433,21 +443,21 @@ Public Function Rotor3AP(angleRadian As Double, BiVectorPlane As tVec3) As tRoto
 
 End Function
 
-Public Function Rotor3Product(p As tRotor3, Q As tRotor3) As tRotor3
+Public Function Rotor3Product(P As tRotor3, Q As tRotor3) As tRotor3
 ' Rotor3-Rotor3 product
 ' non-optimized
     With Rotor3Product
-        .A = p.A * Q.A _
-             - p.b01 * Q.b01 - p.b02 * Q.b02 - p.b12 * Q.b12
+        .A = P.A * Q.A _
+             - P.b01 * Q.b01 - P.b02 * Q.b02 - P.b12 * Q.b12
 
-        .b01 = p.b01 * Q.A + p.A * Q.b01 _
-               + p.b12 * Q.b02 - p.b02 * Q.b12
+        .b01 = P.b01 * Q.A + P.A * Q.b01 _
+               + P.b12 * Q.b02 - P.b02 * Q.b12
 
-        .b02 = p.b02 * Q.A + p.A * Q.b02 _
-               - p.b12 * Q.b01 + p.b01 * Q.b12
+        .b02 = P.b02 * Q.A + P.A * Q.b02 _
+               - P.b12 * Q.b01 + P.b01 * Q.b12
 
-        .b12 = p.b12 * Q.A + p.A * Q.b12 _
-               + p.b02 * Q.b01 - p.b01 * Q.b02
+        .b12 = P.b12 * Q.A + P.A * Q.b12 _
+               + P.b02 * Q.b01 - P.b01 * Q.b02
 
     End With
 
@@ -455,17 +465,17 @@ End Function
 
 
 
-Public Function Rotate3WithRotor(v As tVec3, R As tRotor3) As tVec3
+Public Function Rotate3WithRotor(V As tVec3, R As tRotor3) As tVec3
 
     Dim Q         As tVec3
     Dim q012      As Double
 
     ' q = R V
-    Q.X = R.A * v.X + v.Y * R.b01 + v.Z * R.b02
-    Q.Y = R.A * v.Y - v.X * R.b01 + v.Z * R.b12
-    Q.Z = R.A * v.Z - v.X * R.b02 - v.Y * R.b12
+    Q.X = R.A * V.X + V.Y * R.b01 + V.Z * R.b02
+    Q.Y = R.A * V.Y - V.X * R.b01 + V.Z * R.b12
+    Q.Z = R.A * V.Z - V.X * R.b02 - V.Y * R.b12
 
-    q012 = -v.X * R.b12 + v.Y * R.b02 - v.Z * R.b01   ' trivector
+    q012 = -V.X * R.b12 + V.Y * R.b02 - V.Z * R.b01   ' trivector
 
     ' r = q R*
     With Rotate3WithRotor
@@ -489,7 +499,7 @@ End Function
 
 
 
-Public Function fastEXP(ByVal v As Double) As Double
+Public Function fastEXP(ByVal V As Double) As Double
 'https://en.wikipedia.org/wiki/Pad%C3%A9_approximant
     Dim X2        As Double
     Dim X3        As Double
@@ -497,20 +507,20 @@ Public Function fastEXP(ByVal v As Double) As Double
     Dim X5        As Double
 
 
-    If v < 5! Then
+    If V < 5! Then
 
-        If v < -7! Then fastEXP = 0!: Exit Function
+        If V < -7! Then fastEXP = 0!: Exit Function
 
-        X2 = v * v
-        X3 = X2 * v
-        X4 = X3 * v
-        X5 = X4 * v
+        X2 = V * V
+        X3 = X2 * V
+        X4 = X3 * V
+        X5 = X4 * V
 
-        fastEXP = (1! + INV2 * v + INV9 * X2 + INV72 * X3 + INV1008 * X4 + INV30240 * X5) / _
-                  (1! - INV2 * v + INV9 * X2 - INV72 * X3 + INV1008 * X4 - INV30240 * X5)
+        fastEXP = (1! + INV2 * V + INV9 * X2 + INV72 * X3 + INV1008 * X4 + INV30240 * X5) / _
+                  (1! - INV2 * V + INV9 * X2 - INV72 * X3 + INV1008 * X4 - INV30240 * X5)
 
     Else
-        fastEXP = Exp(v)
+        fastEXP = Exp(V)
     End If
 
 
@@ -544,5 +554,69 @@ End Function
 
 Public Function FastCOS(ByVal X As Single) As Single
     FastCOS = FastSIN(X + PIh)
+End Function
+
+
+Public Function AngleDIFF(ByRef A1 As Double, ByRef A2 As Double) As Double
+
+    AngleDIFF = A1 - A2
+    While AngleDIFF < -PI
+        AngleDIFF = AngleDIFF + PI2
+    Wend
+    While AngleDIFF > PI
+        AngleDIFF = AngleDIFF - PI2
+    Wend
+End Function
+
+
+''https://github.com/processing/processing/blob/349f413a3fb63a75e0b096097a5b0ba7f5565198/core/src/processing/core/PVector.java
+'Public Function AngleBetween(V1 As tVec3, v2 As tVec3) As Double
+'    Dim Dot       As Double
+'    Dim v1Mag     As Double
+'    Dim v2Mag     As Double
+'    Dim amt       As Double
+'
+'    Dot = V1.X * v2.X + V1.Y * v2.Y + V1.Z * v2.Z
+'    v1Mag = Sqr(V1.X * V1.X + V1.Y * V1.Y + V1.Z * V1.Z)
+'    v2Mag = Sqr(v2.X * v2.X + v2.Y * v2.Y + v2.Z * v2.Z)
+'    '  This should be a number between -1 and 1, since it's "normalized"
+'    amt = Dot / (v1Mag * v2Mag)
+'    '  But if it's not due to rounding error, then we need to fix it
+'    '  http://code.google.com/p/processing/issues/detail?id=340
+'    '  Otherwise if outside the range, acos() will return NaN
+'    '  http://www.cppreference.com/wiki/c/math/acos
+'    If (amt <= -1) Then
+'        AngleBetween = PI: Exit Function
+'    ElseIf (amt >= 1) Then
+'        '  http://code.google.com/p/processing/issues/detail?id=435
+'        AngleBetween = 0: Exit Function
+'    End If
+'
+'    AngleBetween = ArcCos(amt)
+'
+'
+'End Function
+
+Public Function AngleBetween(V1 As tVec3, V2 As tVec3) As Double
+'http://www.dotnetframework.org/default.aspx/Net/Net/3@5@50727@3053/DEVDIV/depot/DevDiv/releases/Orcas/SP/wpf/src/Core/CSharp/System/Windows/Media3D/Vector3D@cs/1/Vector3D@cs
+
+
+    Dim Ratio     As Double
+    Dim nV1       As tVec3
+    Dim nV2       As tVec3
+
+    nV1 = Normalize3(V1)
+    nV2 = Normalize3(V2)
+
+    Ratio = DOT3(nV1, nV2)
+
+    If (Ratio < 0) Then
+        '   Math.PI - 2.0 * Math.Asin((-vector1 - vector2).Length / 2.0);
+        AngleBetween = PI - 2# * ArcSin(Length3(SUM3(nV1, nV2)) * 0.5)
+    Else
+        '   2.0 * Math.Asin((vector1 - vector2).Length / 2.0);
+        AngleBetween = 2# * ArcSin(Length3(DIFF3(nV1, nV2)) * 0.5)
+    End If
+
 End Function
 
