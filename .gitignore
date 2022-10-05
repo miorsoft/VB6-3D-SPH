@@ -25,5 +25,7 @@ $RECYCLE.BIN/
 
 *.exe
 
+*.png
+
 /ToIgnore
 /Frames

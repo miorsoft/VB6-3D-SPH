@@ -66,7 +66,7 @@ Public Sub QuickSortSingle2(Dist() As Double, OtherInfo() As Long, ByVal min As 
     hi = max
     Do
         Do While Dist(hi) >= med_value
-            hi = hi - 1
+            hi = hi - 1&
             If hi <= lo Then Exit Do
         Loop
         If hi <= lo Then
@@ -76,10 +76,10 @@ Public Sub QuickSortSingle2(Dist() As Double, OtherInfo() As Long, ByVal min As 
         End If
         Dist(lo) = Dist(hi)
         OtherInfo(lo) = OtherInfo(hi)
-        lo = lo + 1
+        lo = lo + 1&
         
         Do While Dist(lo) < med_value
-            lo = lo + 1
+            lo = lo + 1&
             If lo >= hi Then Exit Do
         Loop
         If lo >= hi Then
@@ -93,7 +93,7 @@ Public Sub QuickSortSingle2(Dist() As Double, OtherInfo() As Long, ByVal min As 
         OtherInfo(hi) = OtherInfo(lo)
 
     Loop
-    QuickSortSingle2 Dist(), OtherInfo(), min, lo - 1
-    QuickSortSingle2 Dist(), OtherInfo(), lo + 1, max
+    QuickSortSingle2 Dist(), OtherInfo(), min, lo - 1&
+    QuickSortSingle2 Dist(), OtherInfo(), lo + 1&, max
 End Sub
 

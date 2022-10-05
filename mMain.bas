@@ -110,25 +110,30 @@ Public Sub SPH_InitConst()
 
     R = 0.33333333333
     '    RestDensity = SmoothKernel_3(r) * 6    ' 2D
+'    RestDensity = SmoothKernel_3(R) * 6#    ' 3D
+    RestDensity = SmoothKernel_3(R) * 6 '2022
 
-    RestDensity = SmoothKernel_3(R) * 6    ' 3D
-
-
-    For R = 0 To 1 Step 0.01
+    For R = 0 To 1 Step 0.001
         I = I + 1
         kernelWeight = kernelWeight + SmoothKernel_3(R)
     Next
-    kernelWeight = kernelWeight / I
 
-    INVRestDensity = 1 / RestDensity
-    PressureLimit = 400 '200 '100    '50    '45 '20
+    kernelWeight = kernelWeight / (I + 1)
+
+     INVRestDensity = 1 / RestDensity
+'    PressureLimit = 400      '200 '100    '50    '45 '20
+    PressureLimit = 800 '2022
 
     DT = 0.25
     invDT = 1 / DT
 
-    KAttraction = 0.0128 * invDT
+    'KAttraction = 0.0128 * invDT
+    KAttraction = 0.0128 * invDT * 0.85 '2022
+    
     KPressure = kernelWeight * 0.08 * invDT
-    KViscosity = 0.018 * 0.8
+    'KViscosity = 0.018 * 0.8
+    KViscosity = 0.018 * 0.8 '2022
+    
 
     ReDim VXChange(NP)
     ReDim VYChange(NP)
@@ -146,7 +151,8 @@ End Sub
 Public Sub SPH_MOVE()
     Dim I         As Long
 
-    Const kRestitution As Double = 0.66 ' 0.85
+    Const kRestitution As Double = 0.5 '0.66
+    Const kWallFriction As Double = 0.99
     Const kFakeDensity As Double = 0.3
     Const kFakeVel As Double = 0.005
 
@@ -176,24 +182,24 @@ Public Sub SPH_MOVE()
         VYChange(I) = 0#
         VZChange(I) = 0#
 
-        vX(I) = vX(I) * 0.999     ' 0.998#
-        vY(I) = vY(I) * 0.999     ' 0.998#
-        vZ(I) = vZ(I) * 0.999     ' 0.998#
+        vX(I) = vX(I) * 0.9995     ' 0.998#
+        vY(I) = vY(I) * 0.9995     ' 0.998#
+        vZ(I) = vZ(I) * 0.9995     ' 0.998#
 
         pX(I) = pX(I) + vX(I) * DT
         pY(I) = pY(I) + vY(I) * DT
         pZ(I) = pZ(I) + vZ(I) * DT
 
 
-        Density(I) = 0
+        Density(I) = 0#
 
-        If pX(I) < 0# Then pX(I) = -pX(I): vX(I) = -vX(I) * kRestitution
-        If pY(I) < 0# Then pY(I) = -pY(I): vY(I) = -vY(I) * kRestitution
-        If pZ(I) < 0# Then pZ(I) = -pZ(I): vZ(I) = -vZ(I) * kRestitution
+        If pX(I) < 0# Then pX(I) = -pX(I): vX(I) = -vX(I) * kRestitution: vY(I) = vY(I) * kWallFriction: vZ(I) = vZ(I) * kWallFriction
+        If pY(I) < 0# Then pY(I) = -pY(I): vY(I) = -vY(I) * kRestitution: vX(I) = vX(I) * kWallFriction: vZ(I) = vZ(I) * kWallFriction
+        If pZ(I) < 0# Then pZ(I) = -pZ(I): vZ(I) = -vZ(I) * kRestitution: vX(I) = vX(I) * kWallFriction: vY(I) = vY(I) * kWallFriction
 
-        If pX(I) > WW Then pX(I) = WW - (pX(I) - WW): vX(I) = -vX(I) * kRestitution
-        If pY(I) > HH Then pY(I) = HH - (pY(I) - HH): vY(I) = -vY(I) * kRestitution
-        If pZ(I) > ZZ Then pZ(I) = ZZ - (pZ(I) - ZZ): vZ(I) = -vZ(I) * kRestitution
+        If pX(I) > WW Then pX(I) = WW - (pX(I) - WW): vX(I) = -vX(I) * kRestitution: vY(I) = vY(I) * kWallFriction: vZ(I) = vZ(I) * kWallFriction
+        If pY(I) > HH Then pY(I) = HH - (pY(I) - HH): vY(I) = -vY(I) * kRestitution: vX(I) = vX(I) * kWallFriction: vZ(I) = vZ(I) * kWallFriction
+        If pZ(I) > ZZ Then pZ(I) = ZZ - (pZ(I) - ZZ): vZ(I) = -vZ(I) * kRestitution: vX(I) = vX(I) * kWallFriction: vY(I) = vY(I) * kWallFriction
 
 
 
@@ -249,43 +255,43 @@ End Sub
 
 
 Public Sub SPH_ComputePAIRS()
-    Dim pair      As Long
+    Dim pair   As Long
 
-    Dim D         As Double
-    Dim I         As Long
-    Dim J         As Long
-    Dim DX        As Double
-    Dim DY        As Double
-    Dim DZ        As Double
+    Dim D      As Double
+    Dim I      As Long
+    Dim J      As Long
+    Dim DX     As Double
+    Dim DY     As Double
+    Dim DZ     As Double
 
     Dim NormalizedDX As Double
     Dim NormalizedDY As Double
     Dim NormalizedDZ As Double
 
-    Dim InvD      As Double
-    Dim R         As Double
-    Dim Smooth    As Double
-    Dim VXcI      As Double
-    Dim VYcI      As Double
-    Dim VZcI      As Double
+    Dim InvD   As Double
+    Dim R      As Double
+    Dim Smooth As Double
+    Dim VXcI   As Double
+    Dim VYcI   As Double
+    Dim VZcI   As Double
 
-    Dim VXcJ      As Double
-    Dim VYcJ      As Double
-    Dim VZcJ      As Double
+    Dim VXcJ   As Double
+    Dim VYcJ   As Double
+    Dim VZcJ   As Double
 
-    Dim K         As Double
-    Dim iX        As Double
-    Dim iY        As Double
-    Dim IZ        As Double
+    Dim K      As Double
+    Dim iX     As Double
+    Dim iY     As Double
+    Dim IZ     As Double
 
     Dim SmoothPRESS As Double
-    Dim Pij       As Double
+    Dim Pij    As Double
 
-    Dim vDX       As Double
-    Dim vDY       As Double
-    Dim vDZ       As Double
+    Dim vDX    As Double
+    Dim vDY    As Double
+    Dim vDZ    As Double
 
-    Dim OmR       As Double
+    Dim OmR    As Double
 
 
 
@@ -295,14 +301,15 @@ Public Sub SPH_ComputePAIRS()
     For pair = 1 To RetNofPairs
         arrD(pair) = Sqr(arrD(pair))    ''''''''''''''<<<<<<<<<<  SQR
         D = arrD(pair)
-        If D Then
-            I = P1(pair)
-            J = P2(pair)
-            R = D * invH
-            Smooth = SmoothKernel_3(R)
-            Density(I) = Density(I) + Smooth
-            Density(J) = Density(J) + Smooth
-        End If
+        '        If D Then
+        I = P1(pair)
+        J = P2(pair)
+        R = D * invH
+        Smooth = SmoothKernel_3(R)
+        Density(I) = Density(I) + Smooth
+        Density(J) = Density(J) + Smooth
+
+        '        End If
     Next
     '------------------------------------------- PRESSURE
     For I = 1 To NP
@@ -316,7 +323,7 @@ Public Sub SPH_ComputePAIRS()
         '        Density(I) = 0#  'move to SPH_MOVE
 
         If Density(I) > 0.001 Then
-            INVDensity(I) = 1 / (Density(I))
+            INVDensity(I) = 1# / (Density(I))
 
             '            INVDensity(I) = 1 / (Density(I) * Density(I))
 
@@ -340,7 +347,7 @@ Public Sub SPH_ComputePAIRS()
 
         D = arrD(pair)
 
-        If D Then
+''        If D Then
 
             R = D * invH    ' the distance between particles in range 0-1
             OmR = 1# - R
@@ -475,16 +482,17 @@ Public Sub SPH_ComputePAIRS()
             VZChange(J) = VZcJ
 
             '----------------------------------------------------------------
-        Else
-            VXChange(I) = VXChange(I) + (Rnd * 2 - 1) * 0.0001 * H
-            VYChange(I) = VYChange(I) + (Rnd * 2 - 1) * 0.0001 * H
-            VZChange(I) = VZChange(I) + (Rnd * 2 - 1) * 0.0001 * H
-
-            VXChange(J) = VXChange(J) + (Rnd * 2 - 1) * 0.0001 * H
-            VYChange(J) = VYChange(J) + (Rnd * 2 - 1) * 0.0001 * H
-            VZChange(J) = VZChange(J) + (Rnd * 2 - 1) * 0.0001 * H
-
-        End If
+''        Else
+''            MsgBox I & "   " & J & "   Same position"
+''            VXChange(I) = VXChange(I) + (Rnd * 2 - 1) * 0.0001 * H
+''            VYChange(I) = VYChange(I) + (Rnd * 2 - 1) * 0.0001 * H
+''            VZChange(I) = VZChange(I) + (Rnd * 2 - 1) * 0.0001 * H
+''
+''            VXChange(J) = VXChange(J) + (Rnd * 2 - 1) * 0.0001 * H
+''            VYChange(J) = VYChange(J) + (Rnd * 2 - 1) * 0.0001 * H
+''            VZChange(J) = VZChange(J) + (Rnd * 2 - 1) * 0.0001 * H
+''
+''        End If
 
 
     Next
@@ -503,7 +511,7 @@ Private Function SmoothKernel_2(ByVal R As Double) As Double
 End Function
 
 Public Function SmoothKernel_3(ByVal R As Double) As Double
-'http://www.astro.lu.se/~david/teaching/SPH/notes/annurev.aa.30.090192.pdf
+''http://www.astro.lu.se/~david/teaching/SPH/notes/annurev.aa.30.090192.pdf
     R = R * 2#
     If R <= 1# Then
         SmoothKernel_3 = 1# - 1.5 * R * R + 0.75 * R * R * R
@@ -511,7 +519,15 @@ Public Function SmoothKernel_3(ByVal R As Double) As Double
         R = 2# - R
         SmoothKernel_3 = 0.25 * R * R * R
     End If
+
+'SmoothKernel_3 = Exp(-R * R * 6.5)
+
 End Function
 
+Public Function SmoothKernel_4(ByVal R As Double) As Double
+'https://www.desmos.com/calculator/o3hktwyuo5
+    R = 1# - R
 
+    SmoothKernel_4 = R * R * R * (6# * R * R - 15# * R + 10#)
+End Function
 

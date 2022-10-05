@@ -534,6 +534,7 @@ Public Sub MainLoop()
         SpatialGRID.ResetPoints
         SpatialGRID.InsertALLpoints pX, pY, pZ
         SpatialGRID.GetPairsWDist P1, P2, arrDX, arrDY, arrDZ, arrD, RetNofPairs
+'        SpatialGRID.GetPairsWDist2 P1, P2, arrDX, arrDY, arrDZ, arrD, RetNofPairs
 
         SPH_ComputePAIRS
 
@@ -597,6 +598,7 @@ Public Sub MainLoop()
                     End With
                 Next
                 
+                
                 QuickSortSingle2 DistFromCamera(), DrawOrderIDX(), 0, NP
                 ' END DRAW ORDER -------
 
@@ -612,7 +614,7 @@ Public Sub MainLoop()
                     If CAMERA.IsPointVisibleGap(Vec3(X, Y, Z), 20) Then
 
                         ' V = V + Z * 50 - 0.2
-                        If Phase(J) = 1 Then
+                        If Phase(J) = 1& Then
                             'cyan
                             '.SetSourceRGBA 0.1 + V, 0.65 + V, 0.75 + V, 0.7  (V 1 , 2 )
                             '                      .SetSourceRGBA 0.02 + V, 0.5 + V, 0.6 + V, 0.85   '(V 3 )
@@ -633,9 +635,9 @@ Public Sub MainLoop()
 
                         End If
 
-                        '.Arc X, Y, 0.7! + DrawR * Z * 340! '(V3)
-                        .Arc X, Y, 0.7 + DrawR * InvZ * 450!  'V4
-
+                        '.Arc X, Y, 0.7 + DrawR * Z * 340#  '(V3)
+                        '.Arc X, Y, 0.7 + DrawR * InvZ * 450#  'V4
+                        .Arc X, Y, 1# + DrawR * InvZ * 400#
                         .Fill
                     End If
 
