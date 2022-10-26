@@ -27,15 +27,15 @@ Private Const INV30240 As Single = 3.30687830687831E-05
 
 
 Public Type tVec3
-    X             As Double
-    Y             As Double
-    Z             As Double
+    x             As Double
+    y             As Double
+    z             As Double
 End Type
 
 
 Public Type tRotor3
     ' scalar part
-    A             As Double    '=1
+    A             As Double  '=1
     ' bivector part
     b01           As Double
     b02           As Double
@@ -44,48 +44,48 @@ End Type
 
 
 
-Public Function Atan2(ByVal X As Double, ByVal Y As Double) As Double
-    If X Then
-'        Stop
-'        Atan2 = -PI + Atn(Y / X) - (X > 0!) * PI
-'        Stop
-        Atan2 = Atn(Y / X) + PI * (X < 0!)
+Public Function Atan2(ByVal x As Double, ByVal y As Double) As Double
+    If x Then
+        '        Stop
+        '        Atan2 = -PI + Atn(Y / X) - (X > 0!) * PI
+        '        Stop
+        Atan2 = Atn(y / x) + PI * (x < 0!)
     Else
-        Atan2 = -PIh - (Y > 0!) * PI
+        Atan2 = -PIh - (y > 0!) * PI
     End If
 End Function
 
-Public Function ArcCos(X As Double) As Double
-    ArcCos = Atn(-X / Sqr(-X * X + 1)) + PIh
+Public Function ArcCos(x As Double) As Double
+    ArcCos = Atn(-x / Sqr(-x * x + 1)) + PIh
 End Function
-Public Function ArcSin(ByVal X As Single) As Single
-    ArcSin = Atn(X / Sqr(-X * X + 1))
+Public Function ArcSin(ByVal x As Single) As Single
+    ArcSin = Atn(x / Sqr(-x * x + 1))
 End Function
 
-Public Function Vec3(X As Double, Y As Double, Z As Double) As tVec3
-    Vec3.X = X
-    Vec3.Y = Y
-    Vec3.Z = Z
+Public Function Vec3(x As Double, y As Double, z As Double) As tVec3
+    Vec3.x = x
+    Vec3.y = y
+    Vec3.z = z
 End Function
 
 Public Function Length3(V As tVec3) As Double
     With V
-        Length3 = Sqr(.X * .X + .Y * .Y + .Z * .Z)
+        Length3 = Sqr(.x * .x + .y * .y + .z * .z)
     End With
 End Function
 
 Public Function Length32(V As tVec3) As Double
     With V
-        Length32 = .X * .X + .Y * .Y + .Z * .Z
+        Length32 = .x * .x + .y * .y + .z * .z
     End With
 End Function
 
 
 
 Public Function SUM3(V1 As tVec3, V2 As tVec3) As tVec3
-    SUM3.X = V1.X + V2.X
-    SUM3.Y = V1.Y + V2.Y
-    SUM3.Z = V1.Z + V2.Z
+    SUM3.x = V1.x + V2.x
+    SUM3.y = V1.y + V2.y
+    SUM3.z = V1.z + V2.z
 End Function
 
 
@@ -93,35 +93,35 @@ End Function
 Public Function Normalize3(V As tVec3) As tVec3
     Dim D         As Double
 
-    D = (V.X * V.X + V.Y * V.Y + V.Z * V.Z)
+    D = (V.x * V.x + V.y * V.y + V.z * V.z)
     If D Then
         D = 1# / Sqr(D)
-        Normalize3.X = V.X * D
-        Normalize3.Y = V.Y * D
-        Normalize3.Z = V.Z * D
+        Normalize3.x = V.x * D
+        Normalize3.y = V.y * D
+        Normalize3.z = V.z * D
     End If
 
 End Function
 
 Public Function MUL3(V As tVec3, ByVal A As Double) As tVec3
-    MUL3.X = V.X * A
-    MUL3.Y = V.Y * A
-    MUL3.Z = V.Z * A
+    MUL3.x = V.x * A
+    MUL3.y = V.y * A
+    MUL3.z = V.z * A
 
 End Function
 
 Public Function DOT3(V1 As tVec3, V2 As tVec3) As Double
 
-    DOT3 = (V1.X * V2.X) + _
-           (V1.Y * V2.Y) + _
-           (V1.Z * V2.Z)
+    DOT3 = (V1.x * V2.x) + _
+           (V1.y * V2.y) + _
+           (V1.z * V2.z)
 
 End Function
 
 Public Function CROSS3(A As tVec3, B As tVec3) As tVec3
-    CROSS3.X = A.Y * B.Z - A.Z * B.Y
-    CROSS3.Y = A.Z * B.X - A.X * B.Z
-    CROSS3.Z = A.X * B.Y - A.Y * B.X
+    CROSS3.x = A.y * B.z - A.z * B.y
+    CROSS3.y = A.z * B.x - A.x * B.z
+    CROSS3.z = A.x * B.y - A.y * B.x
 
 End Function
 
@@ -130,18 +130,18 @@ End Function
 '// Wedge product
 Public Function WEDGE3(A As tVec3, B As tVec3) As tVec3    'BiVector
 
-    WEDGE3.X = A.X * B.Y - A.Y * B.X    ', // XY
-    WEDGE3.Y = A.X * B.Z - A.Z * B.X    ', // XZ
-    WEDGE3.Z = A.Y * B.Z - A.Z * B.Y    '  // YZ
+    WEDGE3.x = A.x * B.y - A.y * B.x    ', // XY
+    WEDGE3.y = A.x * B.z - A.z * B.x    ', // XZ
+    WEDGE3.z = A.y * B.z - A.z * B.y    '  // YZ
 
 
 End Function
 
 
 Public Function DIFF3(V1 As tVec3, V2 As tVec3) As tVec3
-    DIFF3.X = V1.X - V2.X
-    DIFF3.Y = V1.Y - V2.Y
-    DIFF3.Z = V1.Z - V2.Z
+    DIFF3.x = V1.x - V2.x
+    DIFF3.y = V1.y - V2.y
+    DIFF3.z = V1.z - V2.z
 End Function
 
 
@@ -254,7 +254,7 @@ End Function
 
 
 Public Function ToString3(V As tVec3) As String
-    ToString3 = V.X & "   " & V.Y & "   " & V.Z
+    ToString3 = V.x & "   " & V.y & "   " & V.z
 End Function
 
 
@@ -313,35 +313,35 @@ Public Function Rotate3xz(V As tVec3, DirectionXZ As tVec3) As tVec3
 ' Corrected ONE:
 'http://www.vbforums.com/showthread.php?874965-Rotation-using-DOT-product
 
-    Rotate3xz.X = DOT3(V, Vec3(DirectionXZ.X, 0, -DirectionXZ.Z))
+    Rotate3xz.x = DOT3(V, Vec3(DirectionXZ.x, 0, -DirectionXZ.z))
     'Rotate3xz.Y = V.Y * 1
-    Rotate3xz.Y = DOT3(V, Vec3(0, 1, 0))
-    Rotate3xz.Z = DOT3(V, Vec3(DirectionXZ.Z, 0, DirectionXZ.X))
+    Rotate3xz.y = DOT3(V, Vec3(0, 1, 0))
+    Rotate3xz.z = DOT3(V, Vec3(DirectionXZ.z, 0, DirectionXZ.x))
 
 End Function
 
 
 Public Function Rotate3xy(V As tVec3, DirectionXY As tVec3) As tVec3
 
-    Rotate3xy.X = DOT3(V, Vec3(DirectionXY.X, DirectionXY.Y, 0))
-    Rotate3xy.Y = DOT3(V, Vec3(-DirectionXY.Y, DirectionXY.X, 0))
-    Rotate3xy.Z = DOT3(V, Vec3(0, 0, 1))
+    Rotate3xy.x = DOT3(V, Vec3(DirectionXY.x, DirectionXY.y, 0))
+    Rotate3xy.y = DOT3(V, Vec3(-DirectionXY.y, DirectionXY.x, 0))
+    Rotate3xy.z = DOT3(V, Vec3(0, 0, 1))
 
 End Function
 
 Public Function Rotate3yz(V As tVec3, DirectionYZ As tVec3) As tVec3
 
-    Rotate3yz.X = DOT3(V, Vec3(1, 0, 0))
-    Rotate3yz.Y = DOT3(V, Vec3(0, DirectionYZ.Y, DirectionYZ.Z))
-    Rotate3yz.Z = DOT3(V, Vec3(0, -DirectionYZ.Z, DirectionYZ.Y))
+    Rotate3yz.x = DOT3(V, Vec3(1, 0, 0))
+    Rotate3yz.y = DOT3(V, Vec3(0, DirectionYZ.y, DirectionYZ.z))
+    Rotate3yz.z = DOT3(V, Vec3(0, -DirectionYZ.z, DirectionYZ.y))
 
 End Function
 
 Public Function Rotate3zx(V As tVec3, DirectionZX As tVec3) As tVec3
 
-    Rotate3zx.Z = DOT3(V, Vec3(0, DirectionZX.X, DirectionZX.Z))
-    Rotate3zx.Y = DOT3(V, Vec3(0, 1, 0))
-    Rotate3zx.X = DOT3(V, Vec3(0, -DirectionZX.Z, DirectionZX.X))
+    Rotate3zx.z = DOT3(V, Vec3(0, DirectionZX.x, DirectionZX.z))
+    Rotate3zx.y = DOT3(V, Vec3(0, 1, 0))
+    Rotate3zx.x = DOT3(V, Vec3(0, -DirectionZX.z, DirectionZX.x))
 
 
 End Function
@@ -366,9 +366,9 @@ End Function
 
 Public Function XZPerp(V As tVec3) As tVec3
 'LHR
-    XZPerp.X = V.Z
-    XZPerp.Y = V.Y
-    XZPerp.Z = -V.X
+    XZPerp.x = V.z
+    XZPerp.y = V.y
+    XZPerp.z = -V.x
 
     ''Right Hand
     '    XZPerp.X = -v.Z
@@ -418,9 +418,9 @@ Public Function Rotor3FT(vFrom As tVec3, vTo As tVec3) As tRotor3
         .A = 1 + DOT3(vTo, vFrom)
         ' the left side of the products have b a, not a b, so flip
         minusb = WEDGE3(vTo, vFrom)
-        .b01 = minusb.X    '.b01
-        .b02 = minusb.Y    '.b02
-        .b12 = minusb.Z    '.b12
+        .b01 = minusb.x      '.b01
+        .b02 = minusb.y      '.b02
+        .b12 = minusb.z      '.b12
     End With
 
     Rotor3FT = Rotor3Normalize(Rotor3FT)
@@ -436,9 +436,9 @@ Public Function Rotor3AP(angleRadian As Double, BiVectorPlane As tVec3) As tRoto
         SinA = Sin(angleRadian * 0.5)
         .A = Cos(angleRadian * 0.5)
         ' the left side of the products have b a, not a b
-        .b01 = -SinA * BiVectorPlane.X    '.b01
-        .b02 = -SinA * BiVectorPlane.Y    '.b02
-        .b12 = -SinA * BiVectorPlane.Z    '.b12
+        .b01 = -SinA * BiVectorPlane.x    '.b01
+        .b02 = -SinA * BiVectorPlane.y    '.b02
+        .b12 = -SinA * BiVectorPlane.z    '.b12
     End With
 
 End Function
@@ -471,17 +471,17 @@ Public Function Rotate3WithRotor(V As tVec3, R As tRotor3) As tVec3
     Dim q012      As Double
 
     ' q = R V
-    Q.X = R.A * V.X + V.Y * R.b01 + V.Z * R.b02
-    Q.Y = R.A * V.Y - V.X * R.b01 + V.Z * R.b12
-    Q.Z = R.A * V.Z - V.X * R.b02 - V.Y * R.b12
+    Q.x = R.A * V.x + V.y * R.b01 + V.z * R.b02
+    Q.y = R.A * V.y - V.x * R.b01 + V.z * R.b12
+    Q.z = R.A * V.z - V.x * R.b02 - V.y * R.b12
 
-    q012 = -V.X * R.b12 + V.Y * R.b02 - V.Z * R.b01   ' trivector
+    q012 = -V.x * R.b12 + V.y * R.b02 - V.z * R.b01    ' trivector
 
     ' r = q R*
     With Rotate3WithRotor
-        .X = R.A * Q.X + Q.Y * R.b01 + Q.Z * R.b02 - q012 * R.b12
-        .Y = R.A * Q.Y - Q.X * R.b01 + q012 * R.b02 + Q.Z * R.b12
-        .Z = R.A * Q.Z - q012 * R.b01 - Q.X * R.b02 - Q.Y * R.b12
+        .x = R.A * Q.x + Q.y * R.b01 + Q.z * R.b02 - q012 * R.b12
+        .y = R.A * Q.y - Q.x * R.b01 + q012 * R.b02 + Q.z * R.b12
+        .z = R.A * Q.z - q012 * R.b01 - Q.x * R.b02 - Q.y * R.b12
     End With
 
 End Function
@@ -528,7 +528,7 @@ End Function
 
 
 
-Public Function FastSIN(ByVal X As Single) As Single
+Public Function FastSIN(ByVal x As Single) As Single
 'https://math.stackexchange.com/questions/2196371/how-to-approximate-sinx-using-pad%C3%A9-approximation
 ' ORDER 13 K 4
 
@@ -538,22 +538,22 @@ Public Function FastSIN(ByVal X As Single) As Single
     Dim X5        As Single
     Dim X6        As Single
     '
-    While X > PI: X = X - PI2: Wend
-    While X < -PI: X = X + PI2: Wend
+    While x > PI: x = x - PI2: Wend
+    While x < -PI: x = x + PI2: Wend
 
-    X2 = X * X
-    X3 = X2 * X
-    X4 = X3 * X
-    X5 = X4 * X
-    X6 = X5 * X
+    X2 = x * x
+    X3 = X2 * x
+    X4 = X3 * x
+    X5 = X4 * x
+    X6 = X5 * x
 
-    FastSIN = (C12671_D_4363920 * X5 - C2363_D_18183 * X3 + X) / _
+    FastSIN = (C12671_D_4363920 * X5 - C2363_D_18183 * X3 + x) / _
               (C121_D_16662240 * X6 + C601_D_872784 * X4 + C445_D_12122 * X2 + 1!)
 
 End Function
 
-Public Function FastCOS(ByVal X As Single) As Single
-    FastCOS = FastSIN(X + PIh)
+Public Function FastCOS(ByVal x As Single) As Single
+    FastCOS = FastSIN(x + PIh)
 End Function
 
 

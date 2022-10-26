@@ -17,7 +17,7 @@ Public Sub QuicksortSingle(List() As Double, ByVal min As Long, ByVal max As Lon
     hi = max
     Do
         Do While List(hi) >= med_value
-            hi = hi - 1
+            hi = hi - 1&
             If hi <= lo Then Exit Do
         Loop
         If hi <= lo Then
@@ -27,7 +27,7 @@ Public Sub QuicksortSingle(List() As Double, ByVal min As Long, ByVal max As Lon
         List(lo) = List(hi)
         lo = lo + 1
         Do While List(lo) < med_value
-            lo = lo + 1
+            lo = lo + 1&
             If lo >= hi Then Exit Do
         Loop
         If lo >= hi Then
@@ -39,8 +39,8 @@ Public Sub QuicksortSingle(List() As Double, ByVal min As Long, ByVal max As Lon
         ' Swap the lo and hi values.
         List(hi) = List(lo)
     Loop
-    QuicksortSingle List(), min, lo - 1
-    QuicksortSingle List(), lo + 1, max
+    QuicksortSingle List(), min, lo - 1&
+    QuicksortSingle List(), lo + 1&, max
 End Sub
 
 
@@ -77,7 +77,7 @@ Public Sub QuickSortSingle2(Dist() As Double, OtherInfo() As Long, ByVal min As 
         Dist(lo) = Dist(hi)
         OtherInfo(lo) = OtherInfo(hi)
         lo = lo + 1&
-        
+
         Do While Dist(lo) < med_value
             lo = lo + 1&
             If lo >= hi Then Exit Do

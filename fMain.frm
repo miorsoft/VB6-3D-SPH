@@ -272,7 +272,7 @@ Private Sub chkRG_Click()
 End Sub
 
 Private Sub chkRot_Click()
-CamRot = chkRot.Value = vbChecked
+    CamRot = chkRot.Value = vbChecked
 End Sub
 
 Private Sub cmdErase_Click(Index As Integer)
@@ -362,8 +362,8 @@ Private Sub Form_Load()
     PIChDC = PIC.hDC
 
     ScrollDRAW.Value = 2
-    txtNP.Text = 5000  '2000   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    txtMaxD.Text = 14    '25
+    txtNP.Text = 5000        '2000   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    txtMaxD.Text = 14        '25
 
 
 
@@ -416,10 +416,12 @@ Private Sub Command1_Click()
     Set SRF = Cairo.CreateSurface(WW + 1, HH + 1, ImageSurface)
 
     Set SpatialGRID = New cSpatialGrid3D
+    '    Set HASH3D = New cSpatialHash3D
 
-    H = Val(txtMaxD.Text)
-    invH = 1 / H
 
+    h = Val(txtMaxD.Text)
+    invH = 1 / h
+    InvH2 = 1 / (h * h)
     MainLoop
 
 End Sub
@@ -434,9 +436,9 @@ Public Sub MainLoop()
     Dim V         As Double
     Dim OnP       As String
 
-    Dim X         As Double
-    Dim Y         As Double
-    Dim Z         As Double
+    Dim x         As Double
+    Dim y         As Double
+    Dim z         As Double
     Dim InvZ      As Double
 
 
@@ -466,7 +468,18 @@ Public Sub MainLoop()
 
 
 
-    DrawR = H * 0.12
+
+    Dim C         As cHashD
+
+
+    Dim CamPosX   As Double
+    Dim CamPosY   As Double
+    Dim CamPosZ   As Double
+    Dim DX#, DY#, DZ#
+
+    Dim DOT#
+
+    DrawR = h * 0.12
 
     '''OLDPointToScreen    If DrawR < 1.5 Then DrawR = 1.5
 
@@ -479,10 +492,12 @@ Public Sub MainLoop()
     SPH_InitConst
 
 
-    SpatialGRID.Init WW, HH, ZZ, H * 1
+    SpatialGRID.Init WW, HH, ZZ, h * 1
 
+    '    HASH3D.constructor h * 1, NP
+    '    Set C = New_c.HashD(NP)
 
-    GravScale = (H / 60) * invDT
+    GravScale = (h / 60) * invDT
     InvGravScale = 1 / GravScale
 
     ReDim pX(NP)
@@ -531,12 +546,85 @@ Public Sub MainLoop()
 
         SPH_MOVE
 
+        '------------------------
+        '------------------------
+        '------------------------MODO grid
+
         SpatialGRID.ResetPoints
         SpatialGRID.InsertALLpoints pX, pY, pZ
         SpatialGRID.GetPairsWDist P1, P2, arrDX, arrDY, arrDZ, arrD, RetNofPairs
-'        SpatialGRID.GetPairsWDist2 P1, P2, arrDX, arrDY, arrDZ, arrD, RetNofPairs
+        '        SpatialGRID.GetPairsWDist2 P1, P2, arrDX, arrDY, arrDZ, arrD, RetNofPairs
+        '------------------------
+        '------------------------
+        '------------------------MODO HASH
+        '''        Dim nr&
+        '''
+        '''        Dim DX#, DY#, DZ#, D#
+        '''
+        '''        HASH3D.InsertPoints2 pX, pY, pZ
+        '''        RetNofPairs = 0
+        '''        C.ReInit MaxNofPairs
+        '''
+        '''        For I = 1 To NP
+        '''
+        '''            HASH3D.Query Vec3(pX(I), pY(I), pZ(I)), h
+        '''            For nr = 1 To HASH3D.querySize
+        '''
+        '''                J = HASH3D.QueryIds(nr)
+        '''
+        '''                If Not (C.Exists(J & I)) Then
+        '''
+        '''
+        '''                    DX = pX(J) - pX(I)
+        '''                    DY = pY(J) - pY(I)
+        '''                    DZ = pZ(J) - pZ(I)
+        '''                    D = DX * DX + DY * DY + DZ * DZ
+        '''                    If D > 0 And D < (h * h) Then
+        '''
+        '''                        If Not (C.Exists(I & J)) Then
+        '''                            C.Add I & J, ""
+        '''
+        '''                            RetNofPairs = RetNofPairs + 1
+        '''
+        '''                            If RetNofPairs > MaxNofPairs Then
+        '''                                MaxNofPairs = RetNofPairs * 1.7
+        '''                                ReDim Preserve P1(MaxNofPairs): ReDim Preserve P2(MaxNofPairs)
+        '''                                ReDim Preserve arrDX(MaxNofPairs): ReDim Preserve arrDY(MaxNofPairs): ReDim Preserve arrDZ(MaxNofPairs)
+        '''                                ReDim Preserve arrD(MaxNofPairs)
+        '''                            End If
+        '''
+        '''                            P1(RetNofPairs) = I
+        '''                            P2(RetNofPairs) = J
+        '''                            arrDX(RetNofPairs) = DX
+        '''                            arrDY(RetNofPairs) = DY
+        '''                            arrDZ(RetNofPairs) = DZ
+        '''                            arrD(RetNofPairs) = D
+        '''                            If I = 0 And J = 0 Then Stop
+        '''                        End If
+        '''                    End If
+        '''
+        '''                End If
+        '''
+        '''
+        '''            Next
+        '''
+        '''        Next
+        '------------------------
+        '------------------------
+        '------------------------
 
         SPH_ComputePAIRS
+
+
+
+
+
+
+
+
+
+
+
 
         '----------------------
 
@@ -544,7 +632,7 @@ Public Sub MainLoop()
             With SRF.CreateContext
                 '.AntiAlias = CAIRO_ANTIALIAS_SUBPIXEL
                 .AntiAlias = CAIRO_ANTIALIAS_FAST
-                
+
 
                 .SetSourceColor 0
                 .Paint
@@ -569,12 +657,11 @@ Public Sub MainLoop()
                     CAMERA.LineToScreen Vec3(0, HH * 1, 0), Vec3(0, HH * 1, ZZ * 1), LP1(12), LP2(12), Vis(12)
                     RecomputeBOX = False
                 End If
-                .SetSourceRGBA 0.5, 0.85, 0.5, 0.5   ' 0.35
+                .SetSourceRGBA 0.5, 0.85, 0.5, 0.5    ' 0.35
 
                 For L = 1 To 12
-
                     ' If LP1(L).Z > 0 And LP2(L).Z > 0 Then .MoveTo LP1(L).X, LP1(L).Y: .LineTo LP2(L).X, LP2(L).Y: .Stroke
-                    If Vis(L) Then .MoveTo LP1(L).X, LP1(L).Y: .LineTo LP2(L).X, LP2(L).Y: .Stroke
+                    If Vis(L) Then .MoveTo LP1(L).x, LP1(L).y: .LineTo LP2(L).x, LP2(L).y: .Stroke
                 Next
                 ' END DRAW BOX--------------------------------------------
 
@@ -585,21 +672,46 @@ Public Sub MainLoop()
 
 
                 ' DRAW ORDER -------
-                If NP > UBound(DrawOrderIDX) Then ReDim DrawOrderIDX(NP)
+                If NP <> UBound(DrawOrderIDX) Then
+                    ReDim DrawOrderIDX(NP)
+                    For I = 1 To NP
+                        DrawOrderIDX(I) = I
+                    Next
+                End If
                 If NP > UBound(DistFromCamera) Then ReDim DistFromCamera(NP)
+
+
+                With CAMERA.Position
+                    CamPosX = .x
+                    CamPosY = .y
+                    CamPosZ = .z
+                End With
                 For I = 1 To NP
-                    DrawOrderIDX(I) = I
-                    'OK ! Project camera to point vector to CamNormFrontDIR (Front camera Vector)
-                    'DistFromCamera(I) = dot3(DIFF3(Camera.position, Vec3(pX(I), pY(I), pZ(I))), CamNormFrontDIR) 'Camera V3
-                    'Camera V4
-                    'DistFromCamera(I) = DOT3(DIFF3(CAMERA.Position, Vec3(pX(I), pY(I), pZ(I))), CAMERA.Direction)
-                    With DIFF3(CAMERA.Position, Vec3(pX(I), pY(I), pZ(I)))
-                    DistFromCamera(I) = -(.X * .X + .Y * .Y + .Z * .Z)
-                    End With
+                    '                    '                    DrawOrderIDX(I) = I
+                    '                    '                    'OK ! Project camera to point vector to CamNormFrontDIR (Front camera Vector)
+                    '                    '                    'DistFromCamera(I) = dot3(DIFF3(Camera.position, Vec3(pX(I), pY(I), pZ(I))), CamNormFrontDIR) 'Camera V3
+                    '                    '                    'Camera V4
+                    '                    '                    'DistFromCamera(I) = DOT3(DIFF3(CAMERA.Position, Vec3(pX(I), pY(I), pZ(I))), CAMERA.Direction)
+                    '                    'With DIFF3(CAMERA.Position, Vec3(pX(I), pY(I), pZ(I)))
+                    '                    '     DistFromCamera(I) = -(.x * .x + .y * .y + .z * .z)
+                    '                    'End With
+                    '
+                    '                    DX = pX(I) - CamPosX
+                    '                    DY = pY(I) - CamPosY
+                    '                    DZ = pZ(I) - CamPosZ
+                    '                    DistFromCamera(I) = -(DX * DX + DY * DY + DZ * DZ)
+
+                    '---- Speed up Sort:
+                    J = DrawOrderIDX(I)
+                    DX = pX(J) - CamPosX
+                    DY = pY(J) - CamPosY
+                    DZ = pZ(J) - CamPosZ
+                    DistFromCamera(I) = -(DX * DX + DY * DY + DZ * DZ)
+
                 Next
-                
-                
-                QuickSortSingle2 DistFromCamera(), DrawOrderIDX(), 0, NP
+
+
+                QuickSortSingle2 DistFromCamera(), DrawOrderIDX(), 1, NP
                 ' END DRAW ORDER -------
 
                 For I = 1 To NP
@@ -607,11 +719,19 @@ Public Sub MainLoop()
                     J = DrawOrderIDX(I)
 
                     'V = Pressure(J) * 0.075
-                    V = Pressure(J) * 0.15   'V5
+                    'V = Pressure(J) * 0.15    'V5
+                    V = Pressure(J) * 0.125    '2022
 
-                    CAMERA.PointToScreenCoords pX(J), pY(J), pZ(J), X, Y, Z, InvZ
+
+                    CAMERA.PointToScreenCoords pX(J), pY(J), pZ(J), x, y, z, InvZ
                     'If Z > 0 Then
-                    If CAMERA.IsPointVisibleGap(Vec3(X, Y, Z), 20) Then
+                    'If CAMERA.IsPointVisibleGap(Vec3(X, y, Z), 20) Then
+                    If CAMERA.IsPointVisibleGap2(x, y, z, 20) Then
+
+                        '''Dot = 0.001 * DOT3(Vec3(0.71, 0.71, 0.71), Vec3(pX(J), pY(J), pZ(J)))
+                        '''If Dot < 0 Then Dot = 0
+                        '''V = V + Dot
+
 
                         ' V = V + Z * 50 - 0.2
                         If Phase(J) = 1& Then
@@ -623,21 +743,21 @@ Public Sub MainLoop()
 
                             '.SetSourceRGBA 0.015 + V, 0.5 + V, 0.6 + V, 0.8  '0.7  '(V 5)
 
-                            '.SetSourceRGBA 0.015 + V, 0.5 + V, 0.6 + V, 0.95
-                            .SetSourceRGB 0.015 + V, 0.5 + V, 0.6 + V
+                            .SetSourceRGBA 0.015 + V, 0.5 + V, 0.6 + V, 0.55
+                            '                            .SetSourceRGB 0.015 + V, 0.5 + V, 0.6 + V
 
                         Else
                             '.SetSourceRGBA 0.2 + V, 0.7 + V, 0.2 + V, 0.7
 
                             ' .SetSourceRGBA 0.15 + V, 0.6 + V, 0.15 + V, 0.8
-                            '.SetSourceRGBA 0.1 + V, 0.5 + V, 0.1 + V, 0.95
-                            .SetSourceRGB 0.1 + V, 0.5 + V, 0.1 + V
+                            .SetSourceRGBA 0.1 + V, 0.5 + V, 0.1 + V, 0.55
+                            ' .SetSourceRGB 0.1 + V, 0.5 + V, 0.1 + V
 
                         End If
 
                         '.Arc X, Y, 0.7 + DrawR * Z * 340#  '(V3)
                         '.Arc X, Y, 0.7 + DrawR * InvZ * 450#  'V4
-                        .Arc X, Y, 1# + DrawR * InvZ * 400#
+                        .Arc x, y, 1# + DrawR * InvZ * 400#
                         .Fill
                     End If
 
@@ -675,7 +795,7 @@ Public Sub MainLoop()
 
 
                 .SelectFont "Courier New", 10, vbGreen, True
-                .TextOut 80, 4, "Pts: " & Format$(NP, "###,###,###") & "    " & "h = " & H & "   Pairs: " & OnP & "   "
+                .TextOut 80, 4, "Pts: " & Format$(NP, "###,###,###") & "    " & "h = " & h & "   Pairs: " & OnP & "   "
                 .TextOut WW - 185, 4, "Simple SPH by miorsoft"
 
 
@@ -699,13 +819,15 @@ Public Sub MainLoop()
         CNT = CNT + 1&
 
         If rndGravity Then
-            If (CNT And 511) = 0& Then
+            '            If (CNT And 511) = 0& Then
+            If (CNT Mod 650) = 0& Then
+
 
                 gTOX = (Rnd * 2 - 1) * GravScale
                 gTOY = (Rnd * 2 - 1) * GravScale
                 gTOZ = (Rnd * 2 - 1) * GravScale * 1.1
 
-                If Rnd > 0.1 Then
+                If Rnd > 0.2 Then    '0.1
                     If Abs(gTOX) > Abs(gTOY) And Abs(gTOX) > Abs(gTOZ) Then gTOY = 0: gTOZ = 0
                     If Abs(gTOY) > Abs(gTOX) And Abs(gTOY) > Abs(gTOX) Then gTOX = 0: gTOZ = 0
                     If Abs(gTOZ) > Abs(gTOY) And Abs(gTOZ) > Abs(gTOX) Then gTOY = 0: gTOX = 0
@@ -715,10 +837,10 @@ Public Sub MainLoop()
 
             End If
 
-            Line1.X1 = picGravity.Width * 0.5
-            Line1.Y1 = picGravity.Height * 0.5
-            Line1.X2 = Line1.X1 + gTOX * picGravity.Width * 0.5 * InvGravScale
-            Line1.Y2 = Line1.Y1 + gTOY * picGravity.Height * 0.5 * InvGravScale
+            Line1.x1 = picGravity.Width * 0.5
+            Line1.y1 = picGravity.Height * 0.5
+            Line1.X2 = Line1.x1 + gTOX * picGravity.Width * 0.5 * InvGravScale
+            Line1.Y2 = Line1.y1 + gTOY * picGravity.Height * 0.5 * InvGravScale
 
         End If
 
@@ -737,23 +859,20 @@ Public Sub MainLoop()
         ''CAMERA.VectorUP = Vec3(-gX, -gY, -gZ): RecomputeBOX = True
 
 
-
-
         If DoFaucet1 Then FaucetSource (1)
         If DoFaucet2 Then FaucetSource (2)
 
-        'This too   Slows Down
         If (CNT And 31&) = 0& Then
-            fMain.Caption = "NP: " & NP & "     Pairs: " & RetNofPairs & "     FPS: " & FPS
+            fMain.Caption = "NP: " & NP & "     Pairs: " & RetNofPairs & "    computed FPS: " & FPS
             OnP = Format$(RetNofPairs, "###,###,###")
         End If
 
 
 
-If CamRot Then
-RecomputeBOX = True
-CAMERA.SetPositionAndLookAt Vec3(WW * 0.5 + Cos(CNT * 0.0007) * 520, HH * 0.5, ZZ * 0.5 + Sin(CNT * 0.0007) * 520), Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5)
-End If
+        If CamRot Then
+            RecomputeBOX = True
+            CAMERA.SetPositionAndLookAt Vec3(WW * 0.5 + Cos(CNT * 0.0007) * 520, HH * 0.5, ZZ * 0.5 + Sin(CNT * 0.0007) * 520), Vec3(WW * 0.5, HH * 0.5, ZZ * 0.5)
+        End If
 
 
         FauxDoEvents
@@ -767,7 +886,7 @@ End Sub
 
 
 
-Private Sub PIC_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub PIC_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
     If Button = 2 Then
 
         CAMERA.SetRotation 0, 0
@@ -779,7 +898,7 @@ Private Sub PIC_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As
 
 End Sub
 
-Private Sub PIC_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub PIC_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
     Dim D         As Double
     Dim Pitch     As Double
     Dim Yaw       As Double
@@ -787,12 +906,12 @@ Private Sub PIC_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As
 
     Static x0!, y0!, DX!, DY!
 
-    DX = X - x0: DY = Y - y0
+    DX = x - x0: DY = y - y0
 
 
     Select Case Button
     Case 0
-        x0 = X: y0 = Y
+        x0 = x: y0 = y
     Case 1
 
         CAMERA.GetRotation Yaw, Pitch
@@ -804,14 +923,14 @@ Private Sub PIC_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As
         '        Pitch = Pitch - 0.25 * DY
         '        Yaw = (Yaw + 0.25 * dx)
 
-        x0 = X: y0 = Y
+        x0 = x: y0 = y
         '        If Pitch > 90 Then Pitch = 90
         '        If Pitch < -90 Then Pitch = -90
         CAMERA.SetRotation Yaw, Pitch
 
         RecomputeBOX = True
 
-    Case 2    'zoom
+    Case 2                   'zoom
         D = Length3(DIFF3(CAMERA.Position, CAMERA.lookat))
         D = D - DY * 0.25
         '            If D < WW * 0.7 Then D = WW * 0.7
@@ -826,28 +945,28 @@ Private Sub PIC_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As
 
 End Sub
 
-Private Sub picGravity_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub picGravity_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
     If Button = 1 Then
 
-        X = (X \ 5) * 5
-        Y = (Y \ 5) * 5
+        x = (x \ 5) * 5
+        y = (y \ 5) * 5
 
-        gTOX = 2 * (X - picGravity.Width * 0.5) / picGravity.Width * GravScale
-        gTOY = 2 * (Y - picGravity.Height * 0.5) / picGravity.Height * GravScale
+        gTOX = 2 * (x - picGravity.Width * 0.5) / picGravity.Width * GravScale
+        gTOY = 2 * (y - picGravity.Height * 0.5) / picGravity.Height * GravScale
 
-        Line1.X1 = picGravity.Width * 0.5
-        Line1.Y1 = picGravity.Height * 0.5
-        Line1.X2 = X
-        Line1.Y2 = Y
+        Line1.x1 = picGravity.Width * 0.5
+        Line1.y1 = picGravity.Height * 0.5
+        Line1.X2 = x
+        Line1.Y2 = y
 
     ElseIf Button = 2 Then
         gTOX = 0
         gTOY = 0
 
-        Line1.X1 = picGravity.Width * 0.5
-        Line1.Y1 = picGravity.Height * 0.5
-        Line1.X2 = Line1.X1
-        Line1.Y2 = Line1.Y1
+        Line1.x1 = picGravity.Width * 0.5
+        Line1.y1 = picGravity.Height * 0.5
+        Line1.X2 = Line1.x1
+        Line1.Y2 = Line1.y1
 
     End If
 
@@ -868,7 +987,13 @@ Private Sub ScrollDRAW_Scroll()
 End Sub
 
 Private Sub Timer1_Timer()
-    FPS = CNT - OldCNT: OldCNT = CNT
+' FPS = CNT - OldCNT: OldCNT = CNT
+
+    OldmTime = mTime
+    mTime = Timer
+
+    FPS = Int(100# * (CNT - OldCNT) / (mTime - OldmTime)) * 0.01
+    OldCNT = CNT
 End Sub
 
 
@@ -876,8 +1001,8 @@ Private Sub FaucetSource(fPhase As Long)
     Dim A         As Double
     Dim C         As Double
     Dim S         As Double
-    Dim X         As Double
-    Dim Y         As Double
+    Dim x         As Double
+    Dim y         As Double
     Dim L         As Double
     Dim sX        As Double
     Dim sY        As Double
@@ -891,15 +1016,15 @@ Private Sub FaucetSource(fPhase As Long)
     Else
         sX = WW * 2 / 3
         sY = HH * 1 / 3
-        A = -A    '+ 3.14159265358979 '* 0.5
+        A = -A               '+ 3.14159265358979 '* 0.5
     End If
 
     C = Cos(A)
     S = Sin(A)
 
-    For L = -H * 1 To H * 1 Step H * 0.25
-        X = sX + C * L
-        Y = sY + S * L
+    For L = -h * 1 To h * 1 Step h * 0.25
+        x = sX + C * L
+        y = sY + S * L
         NP = NP + 1
 
         ReDim Preserve pX(NP)
@@ -919,13 +1044,13 @@ Private Sub FaucetSource(fPhase As Long)
         ReDim Preserve Pressure(NP)
         ReDim Preserve Phase(NP)
 
-        pX(NP) = X
-        pY(NP) = Y
+        pX(NP) = x
+        pY(NP) = y
         pZ(NP) = ZZ * 0.5
 
-        vX(NP) = -S * H * invDT * 0.25
-        vY(NP) = C * H * invDT * 0.25
-        vZ(NP) = Rnd * 0.01 * H * invDT
+        vX(NP) = -S * h * invDT * 0.25
+        vY(NP) = C * h * invDT * 0.25
+        vZ(NP) = Rnd * 0.01 * h * invDT
 
         Phase(NP) = fPhase
 
@@ -942,10 +1067,10 @@ Private Sub Form_Unload(Cancel As Integer)
 End Sub
 
 
-Private Sub OLDPointToScreen(ByVal X As Double, ByVal Y As Double, ByVal Z As Double, _
+Private Sub OLDPointToScreen(ByVal x As Double, ByVal y As Double, ByVal z As Double, _
                              rX As Double, rY As Double, rZ As Double)
-    rZ = 0.5 + 0.5 * Z * invZZ
-    rX = WW * 0.5 + (X - WW * 0.5) * 0.9 * rZ
-    rY = HH * 0.5 + (Y - HH * 0.5) * 0.9 * rZ
+    rZ = 0.5 + 0.5 * z * invZZ
+    rX = WW * 0.5 + (x - WW * 0.5) * 0.9 * rZ
+    rY = HH * 0.5 + (y - HH * 0.5) * 0.9 * rZ
 End Sub
 

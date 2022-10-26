@@ -5,6 +5,8 @@ Option Explicit
 
 
 Public SpatialGRID As cSpatialGrid3D
+'Public HASH3D As cSpatialHash3D
+
 
 Public PIChDC     As Long
 
@@ -38,18 +40,30 @@ Public COMGravity As Boolean
 Public GravScale  As Double
 
 
-Public FPS        As Long
+Public FPS        As Double
 Public CNT        As Long
 Public OldCNT     As Long
 
+Public mTime      As Double
+Public OldmTime   As Double
+
+
 Public RenderEvery As Long
 
-Public H          As Double    'smoothing radius
+Public h          As Double  'smoothing radius
 Public invH       As Double
+Public InvH2      As Double
+Public SQR_Table() As Double
+Public Normalize_Table() As Double
+Public SmoothKernel_Table() As Double
+
+Public Const TABLESLength As Double = 2 ^ 14 - 1
 
 
 
-Public gX         As Double    'GRACITY
+
+
+Public gX         As Double  'GRAVITY
 Public gY         As Double
 Public gZ         As Double
 
@@ -92,7 +106,7 @@ Public arrDZ()    As Double
 
 Public arrD()     As Double
 Public RetNofPairs As Long
-
+Public MaxNofPairs As Long
 
 
 Public CAMERA     As c3DEasyCam
@@ -101,7 +115,7 @@ Public COMx       As Double
 Public COMy       As Double
 Public COMz       As Double
 
-Public CamRot As Boolean
+Public CamRot     As Boolean
 
 Public Sub SPH_InitConst()
     Dim R         As Double
@@ -110,30 +124,32 @@ Public Sub SPH_InitConst()
 
     R = 0.33333333333
     '    RestDensity = SmoothKernel_3(r) * 6    ' 2D
-'    RestDensity = SmoothKernel_3(R) * 6#    ' 3D
-    RestDensity = SmoothKernel_3(R) * 6 '2022
+    '    RestDensity = SmoothKernel_3(R) * 6#    ' 3D
+    RestDensity = SmoothKernel_3(R) * 6    '2022
 
     For R = 0 To 1 Step 0.001
         I = I + 1
         kernelWeight = kernelWeight + SmoothKernel_3(R)
     Next
 
-    kernelWeight = kernelWeight / (I + 1)
+    'kernelWeight = kernelWeight / (I + 1)
+    kernelWeight = kernelWeight / (I)
 
-     INVRestDensity = 1 / RestDensity
-'    PressureLimit = 400      '200 '100    '50    '45 '20
-    PressureLimit = 800 '2022
+
+    INVRestDensity = 1 / RestDensity
+    '    PressureLimit = 400      '200 '100    '50    '45 '20
+    PressureLimit = 2000     '800 '2022
 
     DT = 0.25
     invDT = 1 / DT
 
     'KAttraction = 0.0128 * invDT
-    KAttraction = 0.0128 * invDT * 0.85 '2022
-    
+    KAttraction = 0.0128 * invDT * 0.85    '2022
+
     KPressure = kernelWeight * 0.08 * invDT
     'KViscosity = 0.018 * 0.8
-    KViscosity = 0.018 * 0.8 '2022
-    
+    KViscosity = 0.018 * 0.5    '2022
+
 
     ReDim VXChange(NP)
     ReDim VYChange(NP)
@@ -145,14 +161,24 @@ Public Sub SPH_InitConst()
 
     ReDim Phase(NP)
 
+    ReDim SQR_Table(TABLESLength)
+    ReDim Normalize_Table(TABLESLength)
+    ReDim SmoothKernel_Table(TABLESLength)
+
+
+    For I = 0 To TABLESLength
+        SQR_Table(I) = Sqr(I / TABLESLength)
+        If I Then Normalize_Table(I) = 1 / (h * I / TABLESLength)
+        SmoothKernel_Table(I) = SmoothKernel_3(I / TABLESLength)
+    Next
 
 End Sub
 
 Public Sub SPH_MOVE()
     Dim I         As Long
 
-    Const kRestitution As Double = 0.5 '0.66
-    Const kWallFriction As Double = 0.99
+    Const kRestitution As Double = 0.5    '0.66
+    Const kWallFriction As Double = 0.995
     Const kFakeDensity As Double = 0.3
     Const kFakeVel As Double = 0.005
 
@@ -165,12 +191,12 @@ Public Sub SPH_MOVE()
     Dim D         As Double
     Dim F         As Double
 
-    Dim wwH#, hhH#, zzH#
+    Dim wwH#, HHH#, zzH#
     Dim S#
 
-    wwH = WW - H
-    hhH = HH - H
-    zzH = ZZ - H
+    wwH = WW - h
+    HHH = HH - h
+    zzH = ZZ - h
 
 
     For I = 1 To NP
@@ -182,9 +208,9 @@ Public Sub SPH_MOVE()
         VYChange(I) = 0#
         VZChange(I) = 0#
 
-        vX(I) = vX(I) * 0.9995     ' 0.998#
-        vY(I) = vY(I) * 0.9995     ' 0.998#
-        vZ(I) = vZ(I) * 0.9995     ' 0.998#
+        vX(I) = vX(I) * 0.9995    ' 0.998#
+        vY(I) = vY(I) * 0.9995    ' 0.998#
+        vZ(I) = vZ(I) * 0.9995    ' 0.998#
 
         pX(I) = pX(I) + vX(I) * DT
         pY(I) = pY(I) + vY(I) * DT
@@ -204,12 +230,12 @@ Public Sub SPH_MOVE()
 
 
         ' -------------------------------- FAKE boundary (density)  and (VEL)
-        If pX(I) < H Then S = SmoothKernel_3(pX(I) * invH): Density(I) = Density(I) + S * kFakeDensity: VXChange(I) = VXChange(I) + S * invDT * kFakeVel
-        If pY(I) < H Then S = SmoothKernel_3(pY(I) * invH): Density(I) = Density(I) + S * kFakeDensity: VYChange(I) = VYChange(I) + S * invDT * kFakeVel
-        If pZ(I) < H Then S = SmoothKernel_3(pZ(I) * invH): Density(I) = Density(I) + S * kFakeDensity: VZChange(I) = VZChange(I) + S * invDT * kFakeVel
+        If pX(I) < h Then S = SmoothKernel_3(pX(I) * invH): Density(I) = Density(I) + S * kFakeDensity: VXChange(I) = VXChange(I) + S * invDT * kFakeVel
+        If pY(I) < h Then S = SmoothKernel_3(pY(I) * invH): Density(I) = Density(I) + S * kFakeDensity: VYChange(I) = VYChange(I) + S * invDT * kFakeVel
+        If pZ(I) < h Then S = SmoothKernel_3(pZ(I) * invH): Density(I) = Density(I) + S * kFakeDensity: VZChange(I) = VZChange(I) + S * invDT * kFakeVel
 
         If pX(I) > wwH Then S = SmoothKernel_3((WW - pX(I)) * invH): Density(I) = Density(I) + S * kFakeDensity: VXChange(I) = VXChange(I) - S * invDT * kFakeVel
-        If pY(I) > hhH Then S = SmoothKernel_3((HH - pY(I)) * invH): Density(I) = Density(I) + S * kFakeDensity: VYChange(I) = VYChange(I) - S * invDT * kFakeVel
+        If pY(I) > HHH Then S = SmoothKernel_3((HH - pY(I)) * invH): Density(I) = Density(I) + S * kFakeDensity: VYChange(I) = VYChange(I) - S * invDT * kFakeVel
         If pZ(I) > zzH Then S = SmoothKernel_3((ZZ - pZ(I)) * invH): Density(I) = Density(I) + S * kFakeDensity: VZChange(I) = VZChange(I) - S * invDT * kFakeVel
         '----------------------------------------
 
@@ -255,43 +281,43 @@ End Sub
 
 
 Public Sub SPH_ComputePAIRS()
-    Dim pair   As Long
+    Dim pair      As Long
 
-    Dim D      As Double
-    Dim I      As Long
-    Dim J      As Long
-    Dim DX     As Double
-    Dim DY     As Double
-    Dim DZ     As Double
+    Dim D         As Double
+    Dim I         As Long
+    Dim J         As Long
+    Dim DX        As Double
+    Dim DY        As Double
+    Dim DZ        As Double
 
     Dim NormalizedDX As Double
     Dim NormalizedDY As Double
     Dim NormalizedDZ As Double
 
-    Dim InvD   As Double
-    Dim R      As Double
-    Dim Smooth As Double
-    Dim VXcI   As Double
-    Dim VYcI   As Double
-    Dim VZcI   As Double
+    Dim InvD      As Double
+    Dim R         As Double
+    Dim Smooth    As Double
+    Dim VXcI      As Double
+    Dim VYcI      As Double
+    Dim VZcI      As Double
 
-    Dim VXcJ   As Double
-    Dim VYcJ   As Double
-    Dim VZcJ   As Double
+    Dim VXcJ      As Double
+    Dim VYcJ      As Double
+    Dim VZcJ      As Double
 
-    Dim K      As Double
-    Dim iX     As Double
-    Dim iY     As Double
-    Dim IZ     As Double
+    Dim K         As Double
+    Dim iX        As Double
+    Dim iY        As Double
+    Dim IZ        As Double
 
     Dim SmoothPRESS As Double
-    Dim Pij    As Double
+    Dim Pij       As Double
 
-    Dim vDX    As Double
-    Dim vDY    As Double
-    Dim vDZ    As Double
+    Dim vDX       As Double
+    Dim vDY       As Double
+    Dim vDZ       As Double
 
-    Dim OmR    As Double
+    Dim OmR       As Double
 
 
 
@@ -299,13 +325,19 @@ Public Sub SPH_ComputePAIRS()
     'PRE comute pairs .... only for DENSITY / Pressure
     '------------------------------------------- DENSITY
     For pair = 1 To RetNofPairs
-        arrD(pair) = Sqr(arrD(pair))    ''''''''''''''<<<<<<<<<<  SQR
-        D = arrD(pair)
+        '        D = Sqr(arrD(pair))    ''''''''''''''<<<<<<<<<<  SQR
+        '        arrD(pair) = D
+
+        D = h * SQR_Table(TABLESLength * arrD(pair) * InvH2)    '   Avoid SQR using a table
+        arrD(pair) = D
+
+
         '        If D Then
         I = P1(pair)
         J = P2(pair)
         R = D * invH
-        Smooth = SmoothKernel_3(R)
+        '        Smooth = SmoothKernel_3(R)
+        Smooth = SmoothKernel_Table(R * TABLESLength)
         Density(I) = Density(I) + Smooth
         Density(J) = Density(J) + Smooth
 
@@ -322,11 +354,9 @@ Public Sub SPH_ComputePAIRS()
         'Reset Density
         '        Density(I) = 0#  'move to SPH_MOVE
 
-        If Density(I) > 0.001 Then
-            INVDensity(I) = 1# / (Density(I))
-
+        If Density(I) > 0.0001 Then
+            INVDensity(I) = 1# / Density(I)
             '            INVDensity(I) = 1 / (Density(I) * Density(I))
-
         Else
             INVDensity(I) = 0#
         End If
@@ -347,12 +377,13 @@ Public Sub SPH_ComputePAIRS()
 
         D = arrD(pair)
 
-''        If D Then
+        If D Then
 
-            R = D * invH    ' the distance between particles in range 0-1
+            R = D * invH     ' the distance between particles in range 0-1
             OmR = 1# - R
 
-            InvD = 1# / D
+            '            InvD = 1# / D ' <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+            InvD = Normalize_Table(R * TABLESLength)    ' AVOID Division
             NormalizedDX = DX * InvD
             NormalizedDY = DY * InvD
             NormalizedDZ = DZ * InvD
@@ -384,8 +415,8 @@ Public Sub SPH_ComputePAIRS()
                 VYcJ = VYcJ - iY
                 VZcJ = VZcJ - IZ
 
-                Smooth = SmoothKernel_3(R)
-
+                '                Smooth = SmoothKernel_3(R)
+                Smooth = SmoothKernel_Table(R * TABLESLength)
 
                 ' <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  PRESSURE
 
@@ -430,7 +461,7 @@ Public Sub SPH_ComputePAIRS()
                 vDY = vY(J) - vY(I)
                 vDZ = vZ(J) - vZ(I)
 
-                K = -0.5 * R * R * R + R * R + 0.5 * InvD * H - 1#
+                K = -0.5 * R * R * R + R * R + 0.5 * InvD * h - 1#
                 K = K * KViscosity
 
                 ' MODE 2 -----------<<<<<<< difference from above
@@ -439,7 +470,7 @@ Public Sub SPH_ComputePAIRS()
 
 
                 'particles are Separating  ?
-                If (DX * vDX + DY * vDY + DZ * vDZ) < 0# Then K = K * 0.001            '025#
+                If (DX * vDX + DY * vDY + DZ * vDZ) < 0# Then K = K * 0.001    '025#
                 If K > 0.5 Then K = 0.5
                 iX = vDX * K
                 iY = vDY * K
@@ -482,17 +513,17 @@ Public Sub SPH_ComputePAIRS()
             VZChange(J) = VZcJ
 
             '----------------------------------------------------------------
-''        Else
-''            MsgBox I & "   " & J & "   Same position"
-''            VXChange(I) = VXChange(I) + (Rnd * 2 - 1) * 0.0001 * H
-''            VYChange(I) = VYChange(I) + (Rnd * 2 - 1) * 0.0001 * H
-''            VZChange(I) = VZChange(I) + (Rnd * 2 - 1) * 0.0001 * H
-''
-''            VXChange(J) = VXChange(J) + (Rnd * 2 - 1) * 0.0001 * H
-''            VYChange(J) = VYChange(J) + (Rnd * 2 - 1) * 0.0001 * H
-''            VZChange(J) = VZChange(J) + (Rnd * 2 - 1) * 0.0001 * H
-''
-''        End If
+        Else
+            '            MsgBox I & "   " & J & "   Same position"
+            VXChange(I) = VXChange(I) + (Rnd * 2 - 1) * 0.00001 * h
+            VYChange(I) = VYChange(I) + (Rnd * 2 - 1) * 0.00001 * h
+            VZChange(I) = VZChange(I) + (Rnd * 2 - 1) * 0.00001 * h
+
+            VXChange(J) = VXChange(J) + (Rnd * 2 - 1) * 0.00001 * h
+            VYChange(J) = VYChange(J) + (Rnd * 2 - 1) * 0.00001 * h
+            VZChange(J) = VZChange(J) + (Rnd * 2 - 1) * 0.00001 * h
+
+        End If
 
 
     Next
@@ -520,7 +551,7 @@ Public Function SmoothKernel_3(ByVal R As Double) As Double
         SmoothKernel_3 = 0.25 * R * R * R
     End If
 
-'SmoothKernel_3 = Exp(-R * R * 6.5)
+    'SmoothKernel_3 = Exp(-R * R * 6.5)
 
 End Function
 
