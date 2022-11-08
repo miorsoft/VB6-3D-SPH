@@ -710,17 +710,21 @@ Public Sub MainLoop()
 
                 Next
 
-
+                SORTSWAPS = 0
                 QuickSortSingle2 DistFromCamera(), DrawOrderIDX(), 1, NP
                 ' END DRAW ORDER -------
 
                 For I = 1 To NP
 
                     J = DrawOrderIDX(I)
-
-                    'V = Pressure(J) * 0.075
-                    'V = Pressure(J) * 0.15    'V5
+                    '
+                    '                    'V = Pressure(J) * 0.075
+                    '                    'V = Pressure(J) * 0.15    'V5
                     V = Pressure(J) * 0.125    '2022
+
+                    'V = (vX(J) * vX(J) + vY(J) * vY(J) + vZ(J) * vZ(J)) * 0.0015
+
+
 
 
                     CAMERA.PointToScreenCoords pX(J), pY(J), pZ(J), x, y, z, InvZ
@@ -728,9 +732,10 @@ Public Sub MainLoop()
                     'If CAMERA.IsPointVisibleGap(Vec3(X, y, Z), 20) Then
                     If CAMERA.IsPointVisibleGap2(x, y, z, 20) Then
 
-                        '''Dot = 0.001 * DOT3(Vec3(0.71, 0.71, 0.71), Vec3(pX(J), pY(J), pZ(J)))
-                        '''If Dot < 0 Then Dot = 0
-                        '''V = V + Dot
+
+
+
+                        V = 0.4 + V - 0.0009 * z    'Darker distance
 
 
                         ' V = V + Z * 50 - 0.2
@@ -820,7 +825,7 @@ Public Sub MainLoop()
 
         If rndGravity Then
             '            If (CNT And 511) = 0& Then
-            If (CNT Mod 650) = 0& Then
+            If (CNT Mod 720) = 0& Then
 
 
                 gTOX = (Rnd * 2 - 1) * GravScale
@@ -863,7 +868,7 @@ Public Sub MainLoop()
         If DoFaucet2 Then FaucetSource (2)
 
         If (CNT And 31&) = 0& Then
-            fMain.Caption = "NP: " & NP & "     Pairs: " & RetNofPairs & "    computed FPS: " & FPS
+            fMain.Caption = "NP: " & NP & "     Pairs: " & RetNofPairs & "    computed FPS: " & FPS & "    SortSwaps: " & SORTSWAPS
             OnP = Format$(RetNofPairs, "###,###,###")
         End If
 

@@ -2,6 +2,9 @@ Attribute VB_Name = "mQuickSort"
 Option Explicit
 'http://www.vbforums.com/showthread.php?231925-VB-Quick-Sort-algorithm-(very-fast-sorting-algorithm)&p=4739885&viewfull=1#post4739885
 
+Public SORTSWAPS  As Long
+
+
 Public Sub QuicksortSingle(List() As Double, ByVal min As Long, ByVal max As Long)
 ' from Low to hi
     Dim med_value As Double
@@ -38,6 +41,7 @@ Public Sub QuicksortSingle(List() As Double, ByVal min As Long, ByVal max As Lon
 
         ' Swap the lo and hi values.
         List(hi) = List(lo)
+
     Loop
     QuicksortSingle List(), min, lo - 1&
     QuicksortSingle List(), lo + 1&, max
@@ -91,7 +95,7 @@ Public Sub QuickSortSingle2(Dist() As Double, OtherInfo() As Long, ByVal min As 
         ' Swap the lo and hi values.
         Dist(hi) = Dist(lo)
         OtherInfo(hi) = OtherInfo(lo)
-
+        SORTSWAPS = SORTSWAPS + 1&
     Loop
     QuickSortSingle2 Dist(), OtherInfo(), min, lo - 1&
     QuickSortSingle2 Dist(), OtherInfo(), lo + 1&, max

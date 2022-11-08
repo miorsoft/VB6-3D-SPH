@@ -57,9 +57,12 @@ Public SQR_Table() As Double
 Public Normalize_Table() As Double
 Public SmoothKernel_Table() As Double
 
-Public Const TABLESLength As Double = 2 ^ 14 - 1
+Public Const TABLESLength As Double = 2 ^ 13 - 1    ' 2 ^ 14 - 1
 
-
+Public Const kRestitution As Double = 0.7    ' 0.75 '0.5    '0.66
+Public Const kWallFriction As Double = 0.996    '0.995
+Public Const kFakeDensity As Double = 2    '0.3  '2022
+Public Const kFakeVel As Double = 0.005
 
 
 
@@ -138,7 +141,7 @@ Public Sub SPH_InitConst()
 
     INVRestDensity = 1 / RestDensity
     '    PressureLimit = 400      '200 '100    '50    '45 '20
-    PressureLimit = 2000     '800 '2022
+    PressureLimit = 2000 * 2    '800 '2022
 
     DT = 0.25
     invDT = 1 / DT
@@ -148,7 +151,7 @@ Public Sub SPH_InitConst()
 
     KPressure = kernelWeight * 0.08 * invDT
     'KViscosity = 0.018 * 0.8
-    KViscosity = 0.018 * 0.5    '2022
+    KViscosity = 0.018 * 0.66    '0.5    '2022
 
 
     ReDim VXChange(NP)
@@ -177,10 +180,7 @@ End Sub
 Public Sub SPH_MOVE()
     Dim I         As Long
 
-    Const kRestitution As Double = 0.5    '0.66
-    Const kWallFriction As Double = 0.995
-    Const kFakeDensity As Double = 0.3
-    Const kFakeVel As Double = 0.005
+
 
 
 
@@ -219,6 +219,7 @@ Public Sub SPH_MOVE()
 
         Density(I) = 0#
 
+
         If pX(I) < 0# Then pX(I) = -pX(I): vX(I) = -vX(I) * kRestitution: vY(I) = vY(I) * kWallFriction: vZ(I) = vZ(I) * kWallFriction
         If pY(I) < 0# Then pY(I) = -pY(I): vY(I) = -vY(I) * kRestitution: vX(I) = vX(I) * kWallFriction: vZ(I) = vZ(I) * kWallFriction
         If pZ(I) < 0# Then pZ(I) = -pZ(I): vZ(I) = -vZ(I) * kRestitution: vX(I) = vX(I) * kWallFriction: vY(I) = vY(I) * kWallFriction
@@ -240,8 +241,6 @@ Public Sub SPH_MOVE()
         '----------------------------------------
 
 
-
-
         COMx = COMx + pX(I)
         COMy = COMy + pY(I)
         COMz = COMz + pZ(I)
@@ -257,7 +256,7 @@ Public Sub SPH_MOVE()
 
 
     If COMGravity Then
-        invNP = 1 / NP
+        invNP = 1# / NP
         COMx = COMx * invNP
         COMy = COMy * invNP
         COMz = COMz * invNP
@@ -267,7 +266,7 @@ Public Sub SPH_MOVE()
             DY = pY(I) - COMy
             DZ = pZ(I) - COMz
             D = DX * DX + DY * DY + DZ * DZ
-            D = 1 / (1 + D)
+            D = 1# / (1# + D)
             F = D * GravScale * NP * 0.0002
             vX(I) = vX(I) - DX * F
             vY(I) = vY(I) - DY * F
@@ -354,7 +353,7 @@ Public Sub SPH_ComputePAIRS()
         'Reset Density
         '        Density(I) = 0#  'move to SPH_MOVE
 
-        If Density(I) > 0.0001 Then
+        If Density(I) > 0.0005 Then
             INVDensity(I) = 1# / Density(I)
             '            INVDensity(I) = 1 / (Density(I) * Density(I))
         Else
@@ -470,7 +469,10 @@ Public Sub SPH_ComputePAIRS()
 
 
                 'particles are Separating  ?
-                If (DX * vDX + DY * vDY + DZ * vDZ) < 0# Then K = K * 0.001    '025#
+                'If (DX * vDX + DY * vDY + DZ * vDZ) < 0# Then K = K * 0.001    '025#
+
+                If (NormalizedDX * vDX + NormalizedDY * vDY + NormalizedDZ * vDZ) < 0# Then K = K * 0.001    '025#
+
                 If K > 0.5 Then K = 0.5
                 iX = vDX * K
                 iY = vDY * K
