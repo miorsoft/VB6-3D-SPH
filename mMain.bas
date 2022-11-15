@@ -2,6 +2,8 @@ Attribute VB_Name = "mMain"
 Option Explicit
 
 
+Public Const ExpectedMaxDensity As Double = 64
+Public Const INVExpectedMaxDensity As Double = 1 / ExpectedMaxDensity
 
 
 Public SpatialGRID As cSpatialGrid3D
@@ -23,6 +25,10 @@ Public pZ()       As Double
 Public vX()       As Double
 Public vY()       As Double
 Public vZ()       As Double
+
+Public pvX()       As Double
+Public pvY()       As Double
+Public pvZ()       As Double
 
 
 Public NP         As Long
@@ -56,6 +62,9 @@ Public InvH2      As Double
 Public SQR_Table() As Double
 Public Normalize_Table() As Double
 Public SmoothKernel_Table() As Double
+Public InvDensity_Table() As Double
+Public Visco_Table()
+
 
 Public Const TABLESLength As Double = 2 ^ 13 - 1    ' 2 ^ 14 - 1
 
@@ -120,6 +129,12 @@ Public COMz       As Double
 
 Public CamRot     As Boolean
 
+
+Public TestMaxDens As Double
+
+
+
+
 Public Sub SPH_InitConst()
     Dim R         As Double
     Dim kernelWeight As Double
@@ -141,7 +156,7 @@ Public Sub SPH_InitConst()
 
     INVRestDensity = 1 / RestDensity
     '    PressureLimit = 400      '200 '100    '50    '45 '20
-    PressureLimit = 2000 * 2    '800 '2022
+    PressureLimit = 2000     '800 '2022
 
     DT = 0.25
     invDT = 1 / DT
@@ -167,12 +182,19 @@ Public Sub SPH_InitConst()
     ReDim SQR_Table(TABLESLength)
     ReDim Normalize_Table(TABLESLength)
     ReDim SmoothKernel_Table(TABLESLength)
+    ReDim InvDensity_Table(TABLESLength)
+    ReDim Visco_Table(TABLESLength)
 
 
     For I = 0 To TABLESLength
         SQR_Table(I) = Sqr(I / TABLESLength)
         If I Then Normalize_Table(I) = 1 / (h * I / TABLESLength)
         SmoothKernel_Table(I) = SmoothKernel_3(I / TABLESLength)
+        If I Then InvDensity_Table(I) = 1 / (ExpectedMaxDensity * (I / TABLESLength))    '
+
+        R = I / TABLESLength
+        If R Then Visco_Table(I) = -0.5 * R * R * R + R * R + 0.5 / R - 1#
+
     Next
 
 End Sub
@@ -354,8 +376,10 @@ Public Sub SPH_ComputePAIRS()
         '        Density(I) = 0#  'move to SPH_MOVE
 
         If Density(I) > 0.0005 Then
-            INVDensity(I) = 1# / Density(I)
-            '            INVDensity(I) = 1 / (Density(I) * Density(I))
+            If Density(I) > TestMaxDens Then TestMaxDens = Density(I)
+            '  INVDensity(I) = 1# / Density(I)
+            If Density(I) > ExpectedMaxDensity Then Density(I) = ExpectedMaxDensity
+            INVDensity(I) = InvDensity_Table(TABLESLength * Density(I) * INVExpectedMaxDensity)
         Else
             INVDensity(I) = 0#
         End If
@@ -460,13 +484,12 @@ Public Sub SPH_ComputePAIRS()
                 vDY = vY(J) - vY(I)
                 vDZ = vZ(J) - vZ(I)
 
-                K = -0.5 * R * R * R + R * R + 0.5 * InvD * h - 1#
-                K = K * KViscosity
+              ' K = (-0.5 * R * R * R + R * R + 0.5 * InvD * h - 1#)* KViscosity
+K = Visco_Table(R * TABLESLength) * KViscosity
 
                 ' MODE 2 -----------<<<<<<< difference from above
 
                 K = K * 8.3 * (INVDensity(I) + INVDensity(J))
-
 
                 'particles are Separating  ?
                 'If (DX * vDX + DY * vDY + DZ * vDZ) < 0# Then K = K * 0.001    '025#
@@ -501,7 +524,6 @@ Public Sub SPH_ComputePAIRS()
                 VZcJ = VZcJ + IZ
 
             End If
-
 
 
             '----------------------------------------------------------------

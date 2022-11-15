@@ -22,15 +22,17 @@ Private Type tCELL
 End Type
 
 
-Private mW        As Long
-Private mH        As Long
-Private mZ        As Long
+
+
 
 Private GridSize  As Long
 
-Private CellW     As Long
-Private CellH     As Long
-Private cellZ     As Long
+Private MAXCellX     As Long
+Private MAXCellY     As Long
+Private MAXCellZ     As Long
+Private MinCellX     As Long
+Private MinCellY     As Long
+Private MinCellZ     As Long
 
 
 Private CELL()    As tCELL
@@ -68,6 +70,8 @@ Private ZZpT()    As Long
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByVal pDest As Long, ByVal pSrc As Long, ByVal ByteLen As Long)
 Private Declare Function GetMem4 Lib "MSVBVM60" (ByVal Src As Long, ByVal dest As Long) As Long
 Private Declare Function ArrPtr Lib "MSVBVM60" Alias "VarPtr" (arr() As Any) As Long
+
+
 
 
 Private Sub pvArrCopySingle(dest() As Double, Src() As Double)
@@ -140,18 +144,20 @@ End Function
 
 
 Public Sub Init(WorldW As Long, WorldH As Long, worldZ As Long, maxDist As Long)
-    mW = WorldW
-    mH = WorldH
-    mZ = worldZ
 
     GridSize = maxDist
     MaxDistance2 = maxDist * maxDist
 
-    CellW = mW \ GridSize
-    CellH = mH \ GridSize
-    cellZ = mZ \ GridSize
-
-    ReDim CELL(CellW, CellH, cellZ)
+    MAXCellX = WorldW \ GridSize + 1 ' +1 because of pvX
+    MAXCellY = WorldH \ GridSize + 1
+    MAXCellZ = worldZ \ GridSize + 1
+    
+    MinCellX = -1 ' -1 because of pvX
+    MinCellY = -1
+    MinCellZ = -1
+   
+   ' ReDim CELL(0 To MAXCellX, 0 To MAXCellY, 0 To MAXCellZ) '
+     ReDim CELL(MinCellX To MAXCellX, MinCellY To MAXCellY, MinCellZ To MAXCellZ)
 
     NP = 0
     Npairs = 0
@@ -221,9 +227,9 @@ Friend Sub ResetPoints()
     Dim y         As Long
     Dim z         As Long
     Dim I&
-    For x = 0 To CellW
-        For y = 0 To CellH
-            For z = 0 To cellZ
+    For x = MinCellX To MAXCellX
+        For y = MinCellY To MAXCellY
+            For z = MinCellZ To MAXCellZ
                 With CELL(x, y, z)
                     .NP = 0&
                     .myIDX = I: I = I + 1&
@@ -234,12 +240,15 @@ Friend Sub ResetPoints()
 
     NP = 0
 
+
+
+
 End Sub
 
 Friend Sub InsertPoint(ByVal x As Double, ByVal y As Double, ByVal z As Double)
     NP = NP + 1
     If NP > MaxNP Then
-        MaxNP = NP * 2
+        MaxNP = 1 + NP * 1.25
         ReDim Preserve pX(MaxNP)
         ReDim Preserve pY(MaxNP)
         ReDim Preserve pZ(MaxNP)
@@ -250,6 +259,9 @@ Friend Sub InsertPoint(ByVal x As Double, ByVal y As Double, ByVal z As Double)
     pZ(NP) = z
 
     pvAddToCell x \ GridSize, y \ GridSize, z \ GridSize, NP
+
+
+
 
 End Sub
 
@@ -279,10 +291,10 @@ Friend Sub InsertALLpoints(x() As Double, y() As Double, z() As Double)
 
 End Sub
 
-Private Sub pvAddToCell(ByVal cellX As Long, ByVal cellY As Long, ByVal cellZ As Long, ByVal CurrP As Long)
+Private Sub pvAddToCell(ByVal cellX As Long, ByVal cellY As Long, ByVal CellZ As Long, ByVal CurrP As Long)
 
-    With CELL(cellX, cellY, cellZ)
-        .NP = .NP + 1
+    With CELL(cellX, cellY, CellZ)
+        .NP = .NP + 1&
         If .NP > .MaxNP Then
             '            .MaxNP = .NP + 64    '* 2
             .MaxNP = 1 + .NP * 1.25
@@ -313,9 +325,6 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
     Dim J         As Long
     Dim D         As Double
 
-    Dim cWm1      As Long
-    Dim cHm1      As Long
-    Dim cZm1      As Long
 
     Dim Xp1       As Long
     Dim Xm1       As Long
@@ -333,21 +342,22 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
     Dim PYI       As Double
     Dim PZI       As Double
 
-    cWm1 = CellW - 1&
-    cHm1 = CellH - 1&
-    cZm1 = cellZ - 1&
+
+
 
     Npairs = 0&
 
-    For x = 0& To CellW
+    For x = MinCellX To MAXCellX
         Xp1 = x + 1&
         Xm1 = x - 1&
 
-        For y = 0& To CellH
+        For y = MinCellY To MAXCellY
+
             Yp1 = y + 1&
             Ym1 = y - 1
 
-            For z = 0& To cellZ
+            For z = MinCellZ To MAXCellZ
+
                 Zp1 = z + 1&
                 Zm1 = z - 1&
 
@@ -378,7 +388,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
 
                         '-------------------------------- Along XY
 
-                        '''                        If Xp1 <= CellW Then
+                        '''                        If Xp1 <= MAXCellX Then
                         '''                            For J = 1& To CELL(Xp1, y, Z).NP    ' X..
                         '''                                iJ = CELL(Xp1, y, Z).pIDX(J)
                         '''                                dX = PX(iJ) - PXI
@@ -387,7 +397,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                         '''                                D = dX * dX + dY * dY + dZ * dZ
                         '''                                If D < MaxDistance2 Then pvAddPairWDist iI, iJ, dX, dY, dZ, D
                         '''                            Next
-                        '''                            If Yp1 <= CellH Then
+                        '''                            If Yp1 <= MAXCellY Then
                         '''                                For J = 1& To CELL(Xp1, Yp1, Z).NP    'XY.
                         '''                                    iJ = CELL(Xp1, Yp1, Z).pIDX(J)
                         '''                                    dX = PX(iJ) - PXI
@@ -398,7 +408,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                         '''                                Next
                         '''                            End If
                         '''                        End If
-                        '''                        If Yp1 <= CellH Then
+                        '''                        If Yp1 <= MAXCellY Then
                         '''                            For J = 1& To CELL(X, Yp1, Z).NP    '.Y.
                         '''                                iJ = CELL(X, Yp1, Z).pIDX(J)
                         '''                                dX = PX(iJ) - PXI
@@ -409,8 +419,8 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                         '''                            Next
                         '''                        End If
                         '''                        '-------------------------------- Along XY at Z+1
-                        '''                        If Zp1 <= cellZ Then
-                        '''                            If Xp1 <= CellW Then
+                        '''                        If Zp1 <= MAXCellZ Then
+                        '''                            If Xp1 <= MAXCellX Then
                         '''                                For J = 1& To CELL(Xp1, y, Zp1).NP    ' X.Z
                         '''                                    iJ = CELL(Xp1, y, Zp1).pIDX(J)
                         '''                                    dX = PX(iJ) - PXI
@@ -419,7 +429,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                         '''                                    D = dX * dX + dY * dY + dZ * dZ
                         '''                                    If D < MaxDistance2 Then pvAddPairWDist iI, iJ, dX, dY, dZ, D
                         '''                                Next
-                        '''                                If Yp1 <= CellH Then
+                        '''                                If Yp1 <= MAXCellY Then
                         '''                                    For J = 1& To CELL(Xp1, Yp1, Zp1).NP    'XYZ
                         '''                                        iJ = CELL(Xp1, Yp1, Zp1).pIDX(J)
                         '''                                        dX = PX(iJ) - PXI
@@ -430,7 +440,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                         '''                                    Next
                         '''                                End If
                         '''                            End If
-                        '''                            If Yp1 <= CellH Then
+                        '''                            If Yp1 <= MAXCellY Then
                         '''                                For J = 1& To CELL(X, Yp1, Zp1).NP    '.YZ
                         '''                                    iJ = CELL(X, Yp1, Zp1).pIDX(J)
                         '''                                    dX = PX(iJ) - PXI
@@ -453,7 +463,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                         '''
                         '''                        '-----------------------UP--------- Along XZ at y-1
                         '''                        If Ym1 >= 0& Then
-                        '''                            If Xp1 <= CellW Then
+                        '''                            If Xp1 <= MAXCellX Then
                         '''                                For J = 1& To CELL(Xp1, Ym1, Z).NP    'X -Y .
                         '''                                    iJ = CELL(Xp1, Ym1, Z).pIDX(J)
                         '''                                    dX = PX(iJ) - PXI
@@ -462,7 +472,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                         '''                                    D = dX * dX + dY * dY + dZ * dZ
                         '''                                    If D < MaxDistance2 Then pvAddPairWDist iI, iJ, dX, dY, dZ, D
                         '''                                Next
-                        '''                                If Zp1 <= cellZ Then
+                        '''                                If Zp1 <= MAXCellZ Then
                         '''                                    For J = 1& To CELL(Xp1, Ym1, Zp1).NP    'X -Y Z
                         '''                                        iJ = CELL(Xp1, Ym1, Zp1).pIDX(J)
                         '''                                        dX = PX(iJ) - PXI
@@ -473,7 +483,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                         '''                                    Next
                         '''                                End If
                         '''                            End If
-                        '''                            If Zp1 <= cellZ Then
+                        '''                            If Zp1 <= MAXCellZ Then
                         '''                                For J = 1& To CELL(X, Ym1, Zp1).NP    '. -Y Z
                         '''                                    iJ = CELL(X, Ym1, Zp1).pIDX(J)
                         '''                                    dX = PX(iJ) - PXI
@@ -491,7 +501,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                         '''                        '----------------------------------------------
                         '''                        '----------------------------------------------
                         '''
-                        '''                        If Xp1 <= CellW Then
+                        '''                        If Xp1 <= MAXCellX Then
                         '''                            If Zm1 >= 0& Then
                         '''                                For J = 1& To CELL(Xp1, y, Zm1).NP  '  X . -Z
                         '''                                    iJ = CELL(Xp1, y, Zm1).pIDX(J)
@@ -501,7 +511,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                         '''                                    D = dX * dX + dY * dY + dZ * dZ
                         '''                                    If D < MaxDistance2 Then pvAddPairWDist iI, iJ, dX, dY, dZ, D
                         '''                                Next
-                        '''                                If Yp1 <= CellH Then
+                        '''                                If Yp1 <= MAXCellY Then
                         '''                                    For J = 1& To CELL(Xp1, Yp1, Zm1).NP  '  X Y -Z
                         '''                                        iJ = CELL(Xp1, Yp1, Zm1).pIDX(J)
                         '''                                        dX = PX(iJ) - PXI
@@ -530,7 +540,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
 
                         ''''   ' --------- SECONDA PROVA
 
-                        If Xp1 <= CellW Then
+                        If Xp1 <= MAXCellX Then
                             With CELL(Xp1, y, z)
                                 For J = 1& To .NP    ' X . .
                                     'iJ = CELL(Xp1, y, z).pIDX(J)
@@ -543,7 +553,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                                     If D < MaxDistance2 Then pvAddPairWDist iI, iJ, DX, DY, DZ, D
                                 Next
                             End With
-                            If Ym1 >= 0& Then
+                            If Ym1 >= MinCellY Then
                                 With CELL(Xp1, Ym1, z)
                                     For J = 1& To .NP    ' X -Y .
                                         'iJ = CELL(Xp1, Ym1, z).pIDX(J)
@@ -557,7 +567,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                                     Next
                                 End With
                             End If
-                            If Yp1 <= CellH Then
+                            If Yp1 <= MAXCellY Then
                                 With CELL(Xp1, Yp1, z)
                                     For J = 1& To .NP    ' X Y .
                                         'iJ = CELL(Xp1, Yp1, z).pIDX(J)
@@ -574,7 +584,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                         End If
 
 
-                        If Yp1 <= CellH Then
+                        If Yp1 <= MAXCellY Then
                             With CELL(x, Yp1, z)
                                 For J = 1& To .NP    ' . Y .
                                     'iJ = CELL(x, Yp1, z).pIDX(J)
@@ -590,8 +600,8 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                         End If
                         '------------------------------------
 
-                        If Zp1 <= cellZ Then
-                            If Xp1 <= CellW Then    '                  X + 1
+                        If Zp1 <= MAXCellZ Then
+                            If Xp1 <= MAXCellX Then    '                  X + 1
                                 With CELL(Xp1, y, Zp1)
                                     For J = 1& To .NP    ' X . Z
                                         'iJ = CELL(Xp1, y, Zp1).pIDX(J)
@@ -604,7 +614,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                                         If D < MaxDistance2 Then pvAddPairWDist iI, iJ, DX, DY, DZ, D
                                     Next
                                 End With
-                                If Yp1 <= CellH Then
+                                If Yp1 <= MAXCellY Then
                                     With CELL(Xp1, Yp1, Zp1)
                                         For J = 1& To .NP    ' X Y Z
                                             'iJ = CELL(Xp1, Yp1, Zp1).pIDX(J)
@@ -618,7 +628,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                                         Next
                                     End With
                                 End If
-                                If Ym1 >= 0& Then
+                                If Ym1 >= MinCellY Then
                                     With CELL(Xp1, Ym1, Zp1)
                                         For J = 1& To .NP    ' X -Y Z
                                             'iJ = CELL(Xp1, Ym1, Zp1).pIDX(J)
@@ -647,7 +657,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                                     If D < MaxDistance2 Then pvAddPairWDist iI, iJ, DX, DY, DZ, D
                                 Next
                             End With
-                            If Yp1 <= CellH Then
+                            If Yp1 <= MAXCellY Then
                                 With CELL(x, Yp1, Zp1)
                                     For J = 1& To .NP    ' . Y Z
                                         'iJ = CELL(x, Yp1, Zp1).pIDX(J)
@@ -661,7 +671,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                                     Next
                                 End With
                             End If
-                            If Ym1 >= 0& Then
+                            If Ym1 >= MinCellY Then
                                 With CELL(x, Ym1, Zp1)
                                     For J = 1& To .NP    ' . -Y Z
                                         'iJ = CELL(x, Ym1, Zp1).pIDX(J)
@@ -679,7 +689,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
 
 
 
-                            If Xm1 >= 0& Then    'CellW Then  2022 BUG FIX  '                  X - 1
+                            If Xm1 >= MinCellX Then    'MAXCellX Then  2022 BUG FIX  '                  X - 1
                                 With CELL(Xm1, y, Zp1)
                                     For J = 1& To .NP    ' -X . Z
                                         'iJ = CELL(Xm1, y, Zp1).pIDX(J)
@@ -692,7 +702,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                                         If D < MaxDistance2 Then pvAddPairWDist iI, iJ, DX, DY, DZ, D
                                     Next
                                 End With
-                                If Yp1 <= CellH Then
+                                If Yp1 <= MAXCellY Then
                                     With CELL(Xm1, Yp1, Zp1)
                                         For J = 1& To .NP    ' -X Y Z
                                             iJ = .pIDX(J)
@@ -704,7 +714,7 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
                                         Next
                                     End With
                                 End If
-                                If Ym1 >= 0& Then
+                                If Ym1 >= MinCellY Then
                                     With CELL(Xm1, Ym1, Zp1)
                                         For J = 1& To .NP    ' -X -Y Z
                                             ' iJ = CELL(Xm1, Ym1, Zp1).pIDX(J)
@@ -849,9 +859,9 @@ Friend Sub GetPairsWDist2(rP1() As Long, rP2() As Long, _
     Dim PYI       As Double
     Dim PZI       As Double
 
-    cWm1 = CellW             '- 1&
-    cHm1 = CellH             '- 1&
-    cZm1 = cellZ             '- 1&
+    cWm1 = MAXCellX             '- 1&
+    cHm1 = MAXCellY             '- 1&
+    cZm1 = MAXCellZ             '- 1&
 
     Npairs = 0&
 
@@ -859,23 +869,23 @@ Friend Sub GetPairsWDist2(rP1() As Long, rP2() As Long, _
     Dim Y2        As Long
     Dim z2        As Long
 
-    For x = 0& To CellW
+    For x = 0& To MAXCellX
         Xp1 = x + 1&
         Xm1 = x - 1&
-        If Xp1 > CellW Then Xp1 = CellW
+        If Xp1 > MAXCellX Then Xp1 = MAXCellX
         If Xm1 < 0& Then Xm1 = 0&
 
 
-        For y = 0& To CellH
+        For y = 0& To MAXCellY
             Yp1 = y + 1&
             Ym1 = y - 1
-            If Yp1 > CellH Then Yp1 = CellH
+            If Yp1 > MAXCellY Then Yp1 = MAXCellY
             If Ym1 < 0& Then Ym1 = 0&
 
-            For z = 0& To cellZ
+            For z = 0& To MAXCellZ
                 Zp1 = z + 1&
                 Zm1 = z - 1&
-                If Zp1 > cellZ Then Zp1 = cellZ
+                If Zp1 > MAXCellZ Then Zp1 = MAXCellZ
                 If Zm1 < 0& Then Zm1 = 0&
 
                 With CELL(x, y, z)

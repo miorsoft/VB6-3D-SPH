@@ -242,6 +242,7 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private SRF       As cCairoSurface
+Private CC As cCairoContext
 
 
 Private RecomputeBOX As Boolean
@@ -323,9 +324,15 @@ Private Sub cmdErase_Click(Index As Integer)
     ReDim Preserve pX(NP)
     ReDim Preserve pY(NP)
     ReDim Preserve pZ(NP)
+    
     ReDim Preserve vX(NP)
     ReDim Preserve vY(NP)
     ReDim Preserve vZ(NP)
+    
+    ReDim Preserve pvX(NP)
+    ReDim Preserve pvY(NP)
+    ReDim Preserve pvZ(NP)
+    
     ReDim Preserve Phase(NP)
 
 End Sub
@@ -414,6 +421,8 @@ Private Sub Command1_Click()
     RecomputeBOX = True
 
     Set SRF = Cairo.CreateSurface(WW + 1, HH + 1, ImageSurface)
+Set CC = SRF.CreateContext
+CC.AntiAlias = CAIRO_ANTIALIAS_FAST
 
     Set SpatialGRID = New cSpatialGrid3D
     '    Set HASH3D = New cSpatialHash3D
@@ -508,6 +517,9 @@ Public Sub MainLoop()
     ReDim vY(NP)
     ReDim vZ(NP)
 
+    ReDim pvX(NP)
+    ReDim pvY(NP)
+    ReDim pvZ(NP)
 
 
     gX = 0
@@ -550,8 +562,26 @@ Public Sub MainLoop()
         '------------------------
         '------------------------MODO grid
 
+
+
+
         SpatialGRID.ResetPoints
-        SpatialGRID.InsertALLpoints pX, pY, pZ
+
+        '------------------------
+        ' SpatialGRID.InsertALLpoints pX, pY, pZ
+        '------------------------
+
+        '-------using pvX '? Dampig?
+        For I = 1 To NP
+            pvX(I) = pX(I) + vX(I) * DT
+            pvY(I) = pY(I) + vY(I) * DT
+            pvZ(I) = pZ(I) + vZ(I) * DT
+        Next
+        SpatialGRID.InsertALLpoints pvX, pvY, pvZ
+        '------------------------
+        '------------------------
+
+
         SpatialGRID.GetPairsWDist P1, P2, arrDX, arrDY, arrDZ, arrD, RetNofPairs
         '        SpatialGRID.GetPairsWDist2 P1, P2, arrDX, arrDY, arrDZ, arrD, RetNofPairs
         '------------------------
@@ -620,18 +650,10 @@ Public Sub MainLoop()
 
 
 
-
-
-
-
-
-
         '----------------------
 
         If (CNT And RenderEvery) = 0& Then
-            With SRF.CreateContext
-                '.AntiAlias = CAIRO_ANTIALIAS_SUBPIXEL
-                .AntiAlias = CAIRO_ANTIALIAS_FAST
+            With CC
 
 
                 .SetSourceColor 0
@@ -825,7 +847,7 @@ Public Sub MainLoop()
 
         If rndGravity Then
             '            If (CNT And 511) = 0& Then
-            If (CNT Mod 720) = 0& Then
+            If (CNT Mod 800) = 0& Then
 
 
                 gTOX = (Rnd * 2 - 1) * GravScale
@@ -868,7 +890,7 @@ Public Sub MainLoop()
         If DoFaucet2 Then FaucetSource (2)
 
         If (CNT And 31&) = 0& Then
-            fMain.Caption = "NP: " & NP & "     Pairs: " & RetNofPairs & "    computed FPS: " & FPS & "    SortSwaps: " & SORTSWAPS
+            fMain.Caption = "NP: " & NP & "     Pairs: " & RetNofPairs & "    computed FPS: " & FPS & "    SortSwaps: " & SORTSWAPS & "       MaxDensity: " & TestMaxDens
             OnP = Format$(RetNofPairs, "###,###,###")
         End If
 
@@ -1039,6 +1061,11 @@ Private Sub FaucetSource(fPhase As Long)
         ReDim Preserve vX(NP)
         ReDim Preserve vY(NP)
         ReDim Preserve vZ(NP)
+
+        ReDim pvX(NP)
+        ReDim pvY(NP)
+        ReDim pvZ(NP)
+
 
         ReDim Preserve VXChange(NP)
         ReDim Preserve VYChange(NP)
