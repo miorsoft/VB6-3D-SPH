@@ -68,7 +68,7 @@ End Function
 
 Friend Function hashPos(Pos As tVec3) As Long
 
-    hashPos = hashCoords(intCoord(Pos.x), intCoord(Pos.y), intCoord(Pos.z))
+    hashPos = hashCoords(intCoord(Pos.X), intCoord(Pos.Y), intCoord(Pos.Z))
 
 End Function
 
@@ -109,10 +109,10 @@ End Function
 '                }
 
 
-Friend Sub InsertPoints2(x() As Double, y() As Double, z() As Double)
+Friend Sub InsertPoints2(X() As Double, Y() As Double, Z() As Double)
     Dim numObjects&
     Dim I&, Start&, h&
-    numObjects = UBound(x)
+    numObjects = UBound(X)
     If UBound(cellEntries) < numObjects Then numObjects = UBound(cellEntries)
 
     ' // determine cell sizes
@@ -127,7 +127,7 @@ Friend Sub InsertPoints2(x() As Double, y() As Double, z() As Double)
     AssignZero cellEntries(0), LenB(cellEntries(0)) * (UBound(cellEntries) + 1)
 
     For I = 1 To numObjects
-        h = hashPos(Vec3(x(I), y(I), z(I)))
+        h = hashPos(Vec3(X(I), Y(I), Z(I)))
         cellStart(h) = cellStart(h) + 1
     Next
 
@@ -143,7 +143,7 @@ Friend Sub InsertPoints2(x() As Double, y() As Double, z() As Double)
     ' // fill in objects ids
 
     For I = 1 To numObjects
-        h = hashPos(Vec3(x(I), y(I), z(I)))
+        h = hashPos(Vec3(X(I), Y(I), Z(I)))
         ' this.cellStart[h]--;
         ' this.cellEntries[this.cellStart[h]] = i;
         cellStart(h) = cellStart(h) - 1&
@@ -230,13 +230,13 @@ Friend Sub Query(Pos As tVec3, maxDist As Double)
     Dim Xi&, Yi&, Zi&
     Dim h&, iStart&, iEnd&
     Dim I&
-    x0 = intCoord(Pos.x - maxDist)
-    y0 = intCoord(Pos.y - maxDist)
-    z0 = intCoord(Pos.z - maxDist)
+    x0 = intCoord(Pos.X - maxDist)
+    y0 = intCoord(Pos.Y - maxDist)
+    z0 = intCoord(Pos.Z - maxDist)
 
-    x1 = intCoord(Pos.x + maxDist)
-    y1 = intCoord(Pos.y + maxDist)
-    z1 = intCoord(Pos.z + maxDist)
+    x1 = intCoord(Pos.X + maxDist)
+    y1 = intCoord(Pos.Y + maxDist)
+    z1 = intCoord(Pos.Z + maxDist)
 
     querySize = 0
 

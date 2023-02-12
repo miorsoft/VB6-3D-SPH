@@ -160,8 +160,8 @@ Private Sub UPDATE(Optional UpdatePitchYawValues As Boolean = False)
 
         D = camFRONT         'opposite sign than above
         With D
-            mPitch = (-Atan2(Sqr(.x * .x + .z * .z), .y)) * Rad2Deg
-            mYaw = (-Atan2(-.x, -.z) + PIh) * Rad2Deg
+            mPitch = (-Atan2(Sqr(.X * .X + .Z * .Z), .Y)) * Rad2Deg
+            mYaw = (-Atan2(-.X, -.Z) + PIh) * Rad2Deg
         End With
 
     End If
@@ -185,9 +185,9 @@ Public Sub SetRotation(ByVal Yaw As Double, ByVal Pitch As Double)
 
     ' ############    CAMERA mVectorUP MUST BE 0,-1,0
     D = Length3(DIFF3(mPosition, mLookAt))
-    mPosition.x = mLookAt.x + D * (Sin(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
-    mPosition.y = mLookAt.y + D * (Sin(Pitch * Deg2Rad))
-    mPosition.z = mLookAt.z + D * (Cos(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
+    mPosition.X = mLookAt.X + D * (Sin(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
+    mPosition.Y = mLookAt.Y + D * (Sin(Pitch * Deg2Rad))
+    mPosition.Z = mLookAt.Z + D * (Cos(Yaw * Deg2Rad) * Cos(Pitch * Deg2Rad))
 
     '    '    'cameraUP = Z
     '            D = Length3(DIFF3(.mPosition, .mLookAt))
@@ -206,38 +206,38 @@ Friend Function PointToScreenWDCam(WorldPos As tVec3, ProjectedDistFromCam As Do
 
     S = DIFF3(WorldPos, mPosition)
 
-    P.x = DOT3(S, camRIGHT)
-    P.y = DOT3(S, camUP)
-    P.z = DOT3(S, camFRONT)
+    P.X = DOT3(S, camRIGHT)
+    P.Y = DOT3(S, camUP)
+    P.Z = DOT3(S, camFRONT)
 
 
-    IZ = 1 / P.z * mZOOM
-    PointToScreenWDCam.x = P.x * IZ * mScreenCenter.x + mScreenCenter.x
-    PointToScreenWDCam.y = P.y * IZ * mScreenCenter.x + mScreenCenter.y
+    IZ = 1 / P.Z * mZOOM
+    PointToScreenWDCam.X = P.X * IZ * mScreenCenter.X + mScreenCenter.X
+    PointToScreenWDCam.Y = P.Y * IZ * mScreenCenter.X + mScreenCenter.Y
 
-    PointToScreenWDCam.z = IZ    ' if its negative point is behind camera
-    ProjectedDistFromCam = P.z    ' if its negative point is behind camera
+    PointToScreenWDCam.Z = IZ    ' if its negative point is behind camera
+    ProjectedDistFromCam = P.Z    ' if its negative point is behind camera
 
 End Function
 
-Friend Sub PointToScreenCoords(ByVal x As Double, ByVal y As Double, ByVal z As Double, _
+Friend Sub PointToScreenCoords(ByVal X As Double, ByVal Y As Double, ByVal Z As Double, _
                                rX As Double, rY As Double, rZ As Double, InvZ As Double)
     Dim S         As tVec3
     Dim P         As tVec3
     '    Dim InvZ        As Double
 
-    S = Vec3(x, y, z)
+    S = Vec3(X, Y, Z)
     S = DIFF3(S, mPosition)
 
     With P
-        .x = DOT3(S, camRIGHT)
-        .y = DOT3(S, camUP)
-        .z = DOT3(S, camFRONT)
+        .X = DOT3(S, camRIGHT)
+        .Y = DOT3(S, camUP)
+        .Z = DOT3(S, camFRONT)
 
-        InvZ = 1# / .z
-        rX = .x * InvZ * mZOOM * mScreenCenter.x + mScreenCenter.x
-        rY = .y * InvZ * mZOOM * mScreenCenter.x + mScreenCenter.y
-        rZ = .z              ' if its negative point is behind camera
+        InvZ = 1# / .Z
+        rX = .X * InvZ * mZOOM * mScreenCenter.X + mScreenCenter.X
+        rY = .Y * InvZ * mZOOM * mScreenCenter.X + mScreenCenter.Y
+        rZ = .Z              ' if its negative point is behind camera
     End With
 
 End Sub
@@ -308,16 +308,16 @@ Friend Sub LineToScreen(P1 As tVec3, P2 As tVec3, Ret1 As tVec3, Ret2 As tVec3, 
 End Sub
 
 
-Friend Function IsPointVisibleCoords(ByVal x As Double, ByVal y As Double, ByVal z As Double) As Boolean
+Friend Function IsPointVisibleCoords(ByVal X As Double, ByVal Y As Double, ByVal Z As Double) As Boolean
 
-    If z < 0 Then Exit Function    ' behind
+    If Z < 0 Then Exit Function    ' behind
 
-    If z > mFarPlaneDist Then Exit Function    ' too far
+    If Z > mFarPlaneDist Then Exit Function    ' too far
 
-    If x < 0 Then Exit Function    ' check if outside screen
-    If y < 0 Then Exit Function
-    If x > mScreenCenter.x * 2 Then Exit Function
-    If y > mScreenCenter.y * 2 Then Exit Function
+    If X < 0 Then Exit Function    ' check if outside screen
+    If Y < 0 Then Exit Function
+    If X > mScreenCenter.X * 2 Then Exit Function
+    If Y > mScreenCenter.Y * 2 Then Exit Function
 
     IsPointVisibleCoords = True
 
@@ -327,13 +327,13 @@ End Function
 Friend Function IsPointVisible(V As tVec3) As Boolean
 
     With V
-        If .z < 0 Then Exit Function    ' behind
-        If .z > mFarPlaneDist Then Exit Function    ' too far
+        If .Z < 0 Then Exit Function    ' behind
+        If .Z > mFarPlaneDist Then Exit Function    ' too far
 
-        If .x < 0 Then Exit Function    ' check if outside screen
-        If .y < 0 Then Exit Function
-        If .x > mScreenCenter.x * 2 Then Exit Function
-        If .y > mScreenCenter.y * 2 Then Exit Function
+        If .X < 0 Then Exit Function    ' check if outside screen
+        If .Y < 0 Then Exit Function
+        If .X > mScreenCenter.X * 2 Then Exit Function
+        If .Y > mScreenCenter.Y * 2 Then Exit Function
     End With
 
     IsPointVisible = True
@@ -343,28 +343,28 @@ End Function
 Friend Function IsPointVisibleGap(V As tVec3, Gap As Double) As Boolean
 
     With V
-        If .z < 0# Then Exit Function    ' behind
-        If .z - Gap > mFarPlaneDist Then Exit Function    ' too far
+        If .Z < 0# Then Exit Function    ' behind
+        If .Z - Gap > mFarPlaneDist Then Exit Function    ' too far
 
-        If .x < -Gap Then Exit Function    ' check if outside screen
-        If .y < -Gap Then Exit Function
-        If .x - Gap > mScreenCenter.x * 2 Then Exit Function
-        If .y - Gap > mScreenCenter.y * 2 Then Exit Function
+        If .X < -Gap Then Exit Function    ' check if outside screen
+        If .Y < -Gap Then Exit Function
+        If .X - Gap > mScreenCenter.X * 2 Then Exit Function
+        If .Y - Gap > mScreenCenter.Y * 2 Then Exit Function
     End With
 
     IsPointVisibleGap = True
 
 End Function
 
-Friend Function IsPointVisibleGap2(x As Double, y As Double, z As Double, Gap As Double) As Boolean
+Friend Function IsPointVisibleGap2(X As Double, Y As Double, Z As Double, Gap As Double) As Boolean
 
-    If z < 0# Then Exit Function    ' behind
-    If z - Gap > mFarPlaneDist Then Exit Function    ' too far
+    If Z < 0# Then Exit Function    ' behind
+    If Z - Gap > mFarPlaneDist Then Exit Function    ' too far
 
-    If x < -Gap Then Exit Function    ' check if outside screen
-    If y < -Gap Then Exit Function
-    If x - Gap > mScreenCenter.x * 2 Then Exit Function
-    If y - Gap > mScreenCenter.y * 2 Then Exit Function
+    If X < -Gap Then Exit Function    ' check if outside screen
+    If Y < -Gap Then Exit Function
+    If X - Gap > mScreenCenter.X * 2 Then Exit Function
+    If Y - Gap > mScreenCenter.Y * 2 Then Exit Function
 
     IsPointVisibleGap2 = True
 
@@ -384,7 +384,7 @@ Friend Function Follow(Target As tVec3, LookAtSpeed01 As Double, PositionSpeed01
         mPosition = SUM3(MUL3(mPosition, 1 - PositionSpeed01), MUL3(SUM3(Target, MUL3(camFRONT, -Sqr(MINDist2))), PositionSpeed01))
     End If
 
-    If PosMinY Then If mPosition.y > PosMinY Then mPosition.y = PosMinY
+    If PosMinY Then If mPosition.Y > PosMinY Then mPosition.Y = PosMinY
 
 
     UPDATE

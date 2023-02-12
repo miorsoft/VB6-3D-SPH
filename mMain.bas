@@ -26,9 +26,9 @@ Public vX()       As Double
 Public vY()       As Double
 Public vZ()       As Double
 
-Public pvX()       As Double
-Public pvY()       As Double
-Public pvZ()       As Double
+Public pvX()      As Double
+Public pvY()      As Double
+Public pvZ()      As Double
 
 
 Public NP         As Long
@@ -63,13 +63,13 @@ Public SQR_Table() As Double
 Public Normalize_Table() As Double
 Public SmoothKernel_Table() As Double
 Public InvDensity_Table() As Double
-Public Visco_Table()
+Public Visco_Table() As Double
 
 
-Public Const TABLESLength As Double = 2 ^ 13 - 1    ' 2 ^ 14 - 1
+Public Const TABLESLength As Double = 2 ^ 14 - 1    ' 2 ^ 14 - 1
 
-Public Const kRestitution As Double = 0.7    ' 0.75 '0.5    '0.66
-Public Const kWallFriction As Double = 0.996    '0.995
+Public Const kRestitution As Double = 0.65    ' 0.65    '0.75    ' 0.75 '0.5    '0.66
+Public Const kWallFriction As Double = 0.99    '0.98 '0.996    '0.995
 Public Const kFakeDensity As Double = 2    '0.3  '2022
 Public Const kFakeVel As Double = 0.005
 
@@ -143,7 +143,7 @@ Public Sub SPH_InitConst()
     R = 0.33333333333
     '    RestDensity = SmoothKernel_3(r) * 6    ' 2D
     '    RestDensity = SmoothKernel_3(R) * 6#    ' 3D
-    RestDensity = SmoothKernel_3(R) * 6    '2022
+    RestDensity = SmoothKernel_3(R) * 5#    '2023
 
     For R = 0 To 1 Step 0.001
         I = I + 1
@@ -156,17 +156,19 @@ Public Sub SPH_InitConst()
 
     INVRestDensity = 1 / RestDensity
     '    PressureLimit = 400      '200 '100    '50    '45 '20
-    PressureLimit = 2000     '800 '2022
+    PressureLimit = 500      '800 '2022
 
     DT = 0.25
     invDT = 1 / DT
 
     'KAttraction = 0.0128 * invDT
-    KAttraction = 0.0128 * invDT * 0.85    '2022
+    KAttraction = 0.0128 * invDT * 0.72    '0.75    ' 0.85    '2023
 
-    KPressure = kernelWeight * 0.08 * invDT
+    'KPressure = kernelWeight * 0.08 * invDT
+    KPressure = kernelWeight * 0.12    '0.15 * invDT '2022
+
     'KViscosity = 0.018 * 0.8
-    KViscosity = 0.018 * 0.66    '0.5    '2022
+    KViscosity = 0.018 * 0.5    '1 '1.5 ' 0.66    '0.5    '2022
 
 
     ReDim VXChange(NP)
@@ -188,6 +190,8 @@ Public Sub SPH_InitConst()
 
     For I = 0 To TABLESLength
         SQR_Table(I) = Sqr(I / TABLESLength)
+
+
         If I Then Normalize_Table(I) = 1 / (h * I / TABLESLength)
         SmoothKernel_Table(I) = SmoothKernel_3(I / TABLESLength)
         If I Then InvDensity_Table(I) = 1 / (ExpectedMaxDensity * (I / TABLESLength))    '
@@ -348,10 +352,20 @@ Public Sub SPH_ComputePAIRS()
     For pair = 1 To RetNofPairs
         '        D = Sqr(arrD(pair))    ''''''''''''''<<<<<<<<<<  SQR
         '        arrD(pair) = D
+        '-------------------
 
         D = h * SQR_Table(TABLESLength * arrD(pair) * InvH2)    '   Avoid SQR using a table
-        arrD(pair) = D
 
+        '-------------------
+        '        D = TABLESLength * arrD(pair) * InvH2
+        '        If D >= 1.10492178673608E-02 Then
+        '            D = h * SQR_Table(D)    '   Avoid SQR using a table
+        '        Else
+        '            D = Sqr(arrD(pair))
+        '        End If
+        '-------------------
+
+        arrD(pair) = D
 
         '        If D Then
         I = P1(pair)
@@ -484,8 +498,8 @@ Public Sub SPH_ComputePAIRS()
                 vDY = vY(J) - vY(I)
                 vDZ = vZ(J) - vZ(I)
 
-              ' K = (-0.5 * R * R * R + R * R + 0.5 * InvD * h - 1#)* KViscosity
-K = Visco_Table(R * TABLESLength) * KViscosity
+                ' K = (-0.5 * R * R * R + R * R + 0.5 * InvD * h - 1#)* KViscosity
+                K = Visco_Table(R * TABLESLength) * KViscosity
 
                 ' MODE 2 -----------<<<<<<< difference from above
 
@@ -538,14 +552,26 @@ K = Visco_Table(R * TABLESLength) * KViscosity
 
             '----------------------------------------------------------------
         Else
+            '        Beep
+            '
+            '
             '            MsgBox I & "   " & J & "   Same position"
-            VXChange(I) = VXChange(I) + (Rnd * 2 - 1) * 0.00001 * h
-            VYChange(I) = VYChange(I) + (Rnd * 2 - 1) * 0.00001 * h
-            VZChange(I) = VZChange(I) + (Rnd * 2 - 1) * 0.00001 * h
+            '            VXChange(I) = VXChange(I) + (Rnd * 2 - 1) * 0.1 * h * 9
+            '            VYChange(I) = VYChange(I) + (Rnd * 2 - 1) * 0.1 * h * 9
+            '            VZChange(I) = VZChange(I) + (Rnd * 2 - 1) * 0.1 * h * 9
+            '
+            '            VXChange(J) = VXChange(J) + (Rnd * 2 - 1) * 0.1 * h * 9
+            '            VYChange(J) = VYChange(J) + (Rnd * 2 - 1) * 0.1 * h * 9
+            '            VZChange(J) = VZChange(J) + (Rnd * 2 - 1) * 0.1 * h * 9
 
-            VXChange(J) = VXChange(J) + (Rnd * 2 - 1) * 0.00001 * h
-            VYChange(J) = VYChange(J) + (Rnd * 2 - 1) * 0.00001 * h
-            VZChange(J) = VZChange(J) + (Rnd * 2 - 1) * 0.00001 * h
+            pX(I) = pX(I) + (Rnd * 2 - 1) * 0.001 * h    '* 9
+            pY(I) = pY(I) + (Rnd * 2 - 1) * 0.001 * h    '* 9
+            pZ(I) = pZ(I) + (Rnd * 2 - 1) * 0.001 * h    '* 9
+
+            pX(J) = pX(J) + (Rnd * 2 - 1) * 0.001 * h    '* 9
+            pY(J) = pY(J) + (Rnd * 2 - 1) * 0.001 * h    '* 9
+            pZ(J) = pZ(J) + (Rnd * 2 - 1) * 0.001 * h    '* 9
+
 
         End If
 
