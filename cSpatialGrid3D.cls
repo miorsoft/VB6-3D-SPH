@@ -161,12 +161,12 @@ Public Sub Init(WorldW As Long, WorldH As Long, worldZ As Long, maxDist As Long)
     MinCellZ = 0
 
     '-1 / +1 because of pvX:
-        MAXCellX = MAXCellX + 1
-        MAXCellY = MAXCellY + 1
-        MAXCellZ = MAXCellZ + 1
-        MinCellX = MinCellX - 1
-        MinCellY = MinCellY - 1
-        MinCellZ = MinCellZ - 1
+    MAXCellX = MAXCellX + 1
+    MAXCellY = MAXCellY + 1
+    MAXCellZ = MAXCellZ + 1
+    MinCellX = MinCellX - 1
+    MinCellY = MinCellY - 1
+    MinCellZ = MinCellZ - 1
 
 
     '-1 / +1  GetPairsWDist4 need to enlarge to avoid boundary check)
@@ -253,9 +253,9 @@ Friend Sub ResetPoints()
     Dim Y         As Long
     Dim Z         As Long
     Dim I&
-    For X = MinCellX To MAXCellX
+    For Z = MinCellZ To MAXCellZ
         For Y = MinCellY To MAXCellY
-            For Z = MinCellZ To MAXCellZ
+            For X = MinCellX To MAXCellX
                 With CELL(X, Y, Z)
                     .NP = 0&
                     .myIDX = I: I = I + 1&
@@ -265,22 +265,24 @@ Friend Sub ResetPoints()
     Next
     NP = 0
 
-
-
-
     '......... Some memory saving
     If (CNT And 255&) = 0& Then
-        For X = MinCellX To MAXCellX
-            For Y = MinCellY To MAXCellY
-                For Z = MinCellZ To MAXCellZ
+    For Z = MinCellZ To MAXCellZ
+        For Y = MinCellY To MAXCellY
+            For X = MinCellX To MAXCellX
                     With CELL(X, Y, Z)
-                        If .MaxNP > 3 Then .MaxNP = .MaxNP - 1
+                        .MaxNP = .MaxNP - 1
+                        If .MaxNP < -10 Then
+                            MaxNP = 0
+                            ReDim pX(MaxNP)
+                            ReDim pY(MaxNP)
+                            ReDim pZ(MaxNP)
+                        End If
                     End With
                 Next
             Next
         Next
     End If
-
 
 End Sub
 
@@ -377,19 +379,19 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
 
     Npairs = 0&
 
-    For X = MinCellX To MAXCellX
-        Xp1 = X + 1&
-        Xm1 = X - 1&
+    For Z = MinCellZ To MAXCellZ
+
+        Zp1 = Z + 1&
+        Zm1 = Z - 1&
+
 
         For Y = MinCellY To MAXCellY
 
             Yp1 = Y + 1&
             Ym1 = Y - 1
-
-            For Z = MinCellZ To MAXCellZ
-
-                Zp1 = Z + 1&
-                Zm1 = Z - 1&
+            For X = MinCellX To MAXCellX
+                Xp1 = X + 1&
+                Xm1 = X - 1&
 
                 With CELL(X, Y, Z)
 
@@ -765,9 +767,9 @@ Friend Sub GetPairsWDist(rP1() As Long, rP2() As Long, _
 
                 End With
 
-            Next Z
+            Next X
         Next Y
-    Next X
+    Next Z
 
 
 
@@ -1297,19 +1299,20 @@ Friend Sub GetPairsWDist4(rP1() As Long, rP2() As Long, _
     TZ = MAXCellZ - 1
 
 
-    For X = FX To TX
-        Xp1 = X + 1&
-        Xm1 = X - 1&
+
+    For Z = FZ To TZ
+
+        Zp1 = Z + 1&
+        Zm1 = Z - 1&
 
         For Y = FY To TY
 
             Yp1 = Y + 1&
             Yp1 = Y - 1&
-
-            For Z = FZ To TZ
-
-                Zp1 = Z + 1&
-                Zm1 = Z - 1&
+            
+            For X = FX To TX
+                Xp1 = X + 1&
+                Xm1 = X - 1&
 
 
                 With CELL(X, Y, Z)
@@ -1358,9 +1361,9 @@ Friend Sub GetPairsWDist4(rP1() As Long, rP2() As Long, _
 
                 End With
 
-            Next Z
+            Next X
         Next Y
-    Next X
+    Next Z
 
     '--------------------------------------------------------------------------------------------------
     '--------------------------------------------------------------------------------------------------

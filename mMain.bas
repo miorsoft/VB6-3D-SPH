@@ -143,7 +143,9 @@ Public Sub SPH_InitConst()
     R = 0.33333333333
     '    RestDensity = SmoothKernel_3(r) * 6    ' 2D
     '    RestDensity = SmoothKernel_3(R) * 6#    ' 3D
-    RestDensity = SmoothKernel_3(R) * 5#    '2023
+    RestDensity = SmoothKernel_3(R) * 5#     '2023
+    
+'    RestDensity = SmoothKernel_3(R) * 5 * 3 'Without Attraction
 
     For R = 0 To 1 Step 0.001
         I = I + 1
@@ -156,20 +158,24 @@ Public Sub SPH_InitConst()
 
     INVRestDensity = 1 / RestDensity
     '    PressureLimit = 400      '200 '100    '50    '45 '20
-    PressureLimit = 500      '800 '2022
+    PressureLimit = 500     '800 '2022
 
     DT = 0.25
     invDT = 1 / DT
 
     'KAttraction = 0.0128 * invDT
     KAttraction = 0.0128 * invDT * 0.72    '0.75    ' 0.85    '2023
+'KAttraction = 0 'Without Attraction
+'    'KPressure = kernelWeight * 0.08 * invDT
+    KPressure = kernelWeight * 0.15 ' 0.12 '0.15    '0.12    '0.15 * invDT '2022
 
-    'KPressure = kernelWeight * 0.08 * invDT
-    KPressure = kernelWeight * 0.12    '0.15 * invDT '2022
+KPressure = KPressure * 1.5
+'KPressure = KPressure * 80 'Without Attraction
 
     'KViscosity = 0.018 * 0.8
-    KViscosity = 0.018 * 0.5    '1 '1.5 ' 0.66    '0.5    '2022
+    KViscosity = 0.018 * 0.5     '1 '1.5 ' 0.66    '0.5    '2022
 
+'KViscosity = KViscosity * 1 'Without Attraction
 
     ReDim VXChange(NP)
     ReDim VYChange(NP)
@@ -197,7 +203,8 @@ Public Sub SPH_InitConst()
         If I Then InvDensity_Table(I) = 1 / (ExpectedMaxDensity * (I / TABLESLength))    '
 
         R = I / TABLESLength
-        If R Then Visco_Table(I) = -0.5 * R * R * R + R * R + 0.5 / R - 1#
+'        If R Then Visco_Table(I) = -0.5 * R * R * R + R * R + 0.5 / R - 1#
+        If R Then Visco_Table(I) = (1 - R) ^ 5 '2023
 
     Next
 
@@ -343,6 +350,8 @@ Public Sub SPH_ComputePAIRS()
     Dim vDZ       As Double
 
     Dim OmR       As Double
+
+Dim DOTvel As Double
 
 
 
@@ -502,27 +511,31 @@ Public Sub SPH_ComputePAIRS()
                 K = Visco_Table(R * TABLESLength) * KViscosity
 
                 ' MODE 2 -----------<<<<<<< difference from above
+'''''Before 2023 OK
+'''                K = K * 8.3 * (INVDensity(I) + INVDensity(J))
+'''
+'''                'particles are Separating  ?
+'''                'If (DX * vDX + DY * vDY + DZ * vDZ) < 0# Then K = K * 0.001    '025#
+'''
+'''''                If (NormalizedDX * vDX + NormalizedDY * vDY + NormalizedDZ * vDZ) < 0# Then K = K * 0.001    '025#
+'''''                If K > 0.5 Then K = 0.5
 
-                K = K * 8.3 * (INVDensity(I) + INVDensity(J))
+'DOTvel = (NormalizedDX * vDX + NormalizedDY * vDY + NormalizedDZ * vDZ)
 
-                'particles are Separating  ?
-                'If (DX * vDX + DY * vDY + DZ * vDZ) < 0# Then K = K * 0.001    '025#
-
-                If (NormalizedDX * vDX + NormalizedDY * vDY + NormalizedDZ * vDZ) < 0# Then K = K * 0.001    '025#
-
-                If K > 0.5 Then K = 0.5
+                K = K * 15:             If K > 1# Then K = 1
+      
                 iX = vDX * K
                 iY = vDY * K
                 IZ = vDZ * K
-
+'If DOTvel < 0 Then
                 VXcI = VXcI + iX
                 VYcI = VYcI + iY
                 VZcI = VZcI + IZ
-
+'Else
                 VXcJ = VXcJ - iX
                 VYcJ = VYcJ - iY
                 VZcJ = VZcJ - IZ
-
+'End If
             Else
                 K = OmR * OmR * KAttraction * 26#
                 iX = NormalizedDX * K

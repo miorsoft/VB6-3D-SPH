@@ -101,3 +101,25 @@ Public Sub QuickSortSingle2(Dist() As Double, OtherInfo() As Long, ByVal min As 
     QuickSortSingle2 Dist(), OtherInfo(), lo + 1&, max
 End Sub
 
+
+
+Public Sub QuickSortSingle3(Dist() As Double, OtherInfo() As Long, ByVal min As Long, ByVal max As Long)
+' FROM HI to LOW  'https://www.vbforums.com/showthread.php?11192-quicksort
+    Dim LOW As Long, HIGH As Long, temp As Double, TestElement As Double, tmp&
+    '     Debug.Print min, max
+    LOW = min: HIGH = max
+    TestElement = Dist((min + max) \ 2)
+'    TestElement = (Dist(min) + Dist(max)) * 0.5
+    Do
+        Do While Dist(LOW) > TestElement: LOW = LOW + 1&: Loop
+        Do While Dist(HIGH) < TestElement: HIGH = HIGH - 1&: Loop
+        If (LOW <= HIGH) Then
+            temp = Dist(LOW): Dist(LOW) = Dist(HIGH): Dist(HIGH) = temp
+            tmp = OtherInfo(LOW): OtherInfo(LOW) = OtherInfo(HIGH): OtherInfo(HIGH) = tmp
+            LOW = LOW + 1&: HIGH = HIGH - 1&
+            SORTSWAPS = SORTSWAPS + 1&
+        End If
+    Loop While (LOW <= HIGH)
+    If (min < HIGH) Then QuickSortSingle3 Dist(), OtherInfo(), min, HIGH
+    If (LOW < max) Then QuickSortSingle3 Dist(), OtherInfo(), LOW, max
+End Sub

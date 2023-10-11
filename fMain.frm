@@ -597,17 +597,18 @@ Public Sub MainLoop()
         SpatialGRID.ResetPoints
 
         '------------------------
-        ''        SpatialGRID.InsertALLpoints pX, pY, pZ
+               SpatialGRID.InsertALLpoints pX, pY, pZ
         '------------------------
-
-        ''        '-------using pvX '? Dampig?
-        For I = 1 To NP
-            pvX(I) = pX(I) + vX(I) * DT
-            pvY(I) = pY(I) + vY(I) * DT
-            pvZ(I) = pZ(I) + vZ(I) * DT
-        Next
-        SpatialGRID.InsertALLpoints pvX, pvY, pvZ
-        '------------------------
+        Dim tdt#
+        tdt = DT * 0.5
+''''        ''        '-------using pvX '? Dampig?
+''        For I = 1 To NP
+''            pvX(I) = pX(I) + vX(I) * tdt
+''            pvY(I) = pY(I) + vY(I) * tdt
+''            pvZ(I) = pZ(I) + vZ(I) * tdt
+''        Next
+''        SpatialGRID.InsertALLpoints pvX, pvY, pvZ
+''        '------------------------
         '------------------------
 
 
@@ -762,10 +763,12 @@ Public Sub MainLoop()
                 Next
 
                 SORTSWAPS = 0
-                QuickSortSingle2 DistFromCamera(), DrawOrderIDX(), 1, NP
+                'QuickSortSingle2 DistFromCamera(), DrawOrderIDX(), 1, NP
+                QuickSortSingle3 DistFromCamera(), DrawOrderIDX(), 1, NP
+                
                 ' END DRAW ORDER -------
 
-                For I = 1 To NP
+                For I = NP To 1 Step -1
 
                     J = DrawOrderIDX(I)
                     '
@@ -913,8 +916,11 @@ Public Sub MainLoop()
         ''CAMERA.VectorUP = Vec3(-gX, -gY, -gZ): RecomputeBOX = True
 
 
-        If DoFaucet1 Then FaucetSourceB (1)
-        If DoFaucet2 Then FaucetSourceB (2)
+        If DoFaucet1 Then FaucetSource (1)
+        If DoFaucet2 Then FaucetSource (2)
+        'If DoFaucet1 Then FaucetSourceB (1)
+        'If DoFaucet2 Then FaucetSourceB (2)
+
 
         If (CNT And 31&) = 0& Then
             fMain.Caption = "NP: " & NP & "     Pairs: " & RetNofPairs & "    computed FPS: " & FPS & "    SortSwaps: " & SORTSWAPS & "       MaxDensity: " & TestMaxDens
@@ -1140,9 +1146,10 @@ Private Sub FaucetSourceB(fPhase As Long)
 
     R = h * 1.2
     stp = h * 0.5
-    For X = sX - R To sX + R Step stp
-        For Y = sY - R To sY + R Step stp
 
+        For Y = sY - R To sY + R Step stp
+    For X = sX - R To sX + R Step stp
+    
             If (X - sX) ^ 2 + (Y - sY) ^ 2 <= R * R Then
                 NP = NP + 1
 
