@@ -1,11 +1,14 @@
 Attribute VB_Name = "mVectors"
 Option Explicit
 
-Public Const PI   As Double = 3.14159265358979
-Public Const InvPI As Double = 1 / 3.14159265358979
+Public Const PI   As Single = 3.14159265358979
+Attribute PI.VB_VarUserMemId = 1073938432
+Public Const InvPI As Single = 1 / 3.14159265358979
+Attribute InvPI.VB_VarUserMemId = 1073938433
 
-Public Const PIh  As Double = 1.5707963267949
-Public Const PI2  As Double = 6.28318530717959
+Public Const PIh  As Single = 1.5707963267949
+Public Const PI2  As Single = 6.28318530717959
+Attribute PI2.VB_VarUserMemId = 1073938434
 
 
 'Pade Approximant-----------****************************************
@@ -13,38 +16,49 @@ Public Const PI2  As Double = 6.28318530717959
 
 'SIN
 Private Const C12671_D_4363920 As Single = 12671 / 4363920
+Attribute C12671_D_4363920.VB_VarUserMemId = 1073938433
 Private Const C2363_D_18183 As Single = 2363 / 18183
+Attribute C2363_D_18183.VB_VarUserMemId = 1610809345
 Private Const C121_D_16662240 As Single = 121 / 16662240
+Attribute C121_D_16662240.VB_VarUserMemId = 1073938435
 Private Const C601_D_872784 As Single = 601 / 872784
+Attribute C601_D_872784.VB_VarUserMemId = 1073938436
 Private Const C445_D_12122 As Single = 445 / 12122
+Attribute C445_D_12122.VB_VarUserMemId = 1073938437
 
 'EXP
 Private Const INV2 As Single = 0.5
+Attribute INV2.VB_VarUserMemId = 1073741830
 Private Const INV9 As Single = 0.111111111111111
+Attribute INV9.VB_VarUserMemId = 1610809346
 Private Const INV72 As Single = 1.38888888888889E-02
+Attribute INV72.VB_VarUserMemId = 1073938440
 Private Const INV1008 As Single = 9.92063492063492E-04
+Attribute INV1008.VB_VarUserMemId = 1073938441
 Private Const INV30240 As Single = 3.30687830687831E-05
+Attribute INV30240.VB_VarUserMemId = 1073938442
 
 
 Public Type tVec3
-    X             As Double
-    Y             As Double
-    Z             As Double
+    X             As Single
+    Y             As Single
+    Z             As Single
 End Type
 
 
 Public Type tRotor3
     ' scalar part
-    A             As Double  '=1
+    A             As Single        '=1
     ' bivector part
-    b01           As Double
-    b02           As Double
-    b12           As Double
+    b01           As Single
+    b02           As Single
+    b12           As Single
 End Type
 
 
 
-Public Function Atan2(ByVal X As Double, ByVal Y As Double) As Double
+Public Function Atan2(ByVal X As Single, ByVal Y As Single) As Single
+Attribute Atan2.VB_UserMemId = 1073741848
     If X Then
         '        Stop
         '        Atan2 = -PI + Atn(Y / X) - (X > 0!) * PI
@@ -55,26 +69,31 @@ Public Function Atan2(ByVal X As Double, ByVal Y As Double) As Double
     End If
 End Function
 
-Public Function ArcCos(X As Double) As Double
+Public Function ArcCos(X As Single) As Single
+Attribute ArcCos.VB_UserMemId = 1073938457
     ArcCos = Atn(-X / Sqr(-X * X + 1)) + PIh
 End Function
 Public Function ArcSin(ByVal X As Single) As Single
+Attribute ArcSin.VB_UserMemId = 1073741856
     ArcSin = Atn(X / Sqr(-X * X + 1))
 End Function
 
-Public Function Vec3(X As Double, Y As Double, Z As Double) As tVec3
+Public Function Vec3(X As Single, Y As Single, Z As Single) As tVec3
+Attribute Vec3.VB_UserMemId = 1073741860
     Vec3.X = X
     Vec3.Y = Y
     Vec3.Z = Z
 End Function
 
-Public Function Length3(V As tVec3) As Double
+Public Function Length3(V As tVec3) As Single
+Attribute Length3.VB_UserMemId = 1610612740
     With V
         Length3 = Sqr(.X * .X + .Y * .Y + .Z * .Z)
     End With
 End Function
 
-Public Function Length32(V As tVec3) As Double
+Public Function Length32(V As tVec3) As Single
+Attribute Length32.VB_UserMemId = 1610612741
     With V
         Length32 = .X * .X + .Y * .Y + .Z * .Z
     End With
@@ -83,6 +102,7 @@ End Function
 
 
 Public Function SUM3(V1 As tVec3, V2 As tVec3) As tVec3
+Attribute SUM3.VB_UserMemId = 1073741868
     SUM3.X = V1.X + V2.X
     SUM3.Y = V1.Y + V2.Y
     SUM3.Z = V1.Z + V2.Z
@@ -91,11 +111,12 @@ End Function
 
 
 Public Function Normalize3(V As tVec3) As tVec3
-    Dim D         As Double
+Attribute Normalize3.VB_UserMemId = 1610612743
+    Dim D         As Single
     With V
         D = (.X * .X + .Y * .Y + .Z * .Z)
         If D Then
-            D = 1# / Sqr(D)
+            D = 1 / Sqr(D)
             Normalize3.X = .X * D
             Normalize3.Y = .Y * D
             Normalize3.Z = .Z * D
@@ -103,14 +124,16 @@ Public Function Normalize3(V As tVec3) As tVec3
     End With
 End Function
 
-Public Function MUL3(V As tVec3, ByVal A As Double) As tVec3
+Public Function MUL3(V As tVec3, ByVal A As Single) As tVec3
+Attribute MUL3.VB_UserMemId = 1610612744
     MUL3.X = V.X * A
     MUL3.Y = V.Y * A
     MUL3.Z = V.Z * A
 
 End Function
 
-Public Function DOT3(V1 As tVec3, V2 As tVec3) As Double
+Public Function DOT3(V1 As tVec3, V2 As tVec3) As Single
+Attribute DOT3.VB_UserMemId = 1610612745
 
     DOT3 = (V1.X * V2.X) + _
            (V1.Y * V2.Y) + _
@@ -119,6 +142,7 @@ Public Function DOT3(V1 As tVec3, V2 As tVec3) As Double
 End Function
 
 Public Function CROSS3(A As tVec3, B As tVec3) As tVec3
+Attribute CROSS3.VB_UserMemId = 1610612746
     CROSS3.X = A.Y * B.Z - A.Z * B.Y
     CROSS3.Y = A.Z * B.X - A.X * B.Z
     CROSS3.Z = A.X * B.Y - A.Y * B.X
@@ -129,6 +153,7 @@ End Function
 
 '// Wedge product
 Public Function WEDGE3(A As tVec3, B As tVec3) As tVec3    'BiVector
+Attribute WEDGE3.VB_UserMemId = 1073741895
 
     WEDGE3.X = A.X * B.Y - A.Y * B.X    ', // XY
     WEDGE3.Y = A.X * B.Z - A.Z * B.X    ', // XZ
@@ -146,6 +171,7 @@ End Function
 
 
 Public Function Project3(V As tVec3, V2nrmlzd As tVec3) As tVec3
+Attribute Project3.VB_UserMemId = 1610612749
 
     Project3 = MUL3(V2nrmlzd, DOT3(V, V2nrmlzd))
 
@@ -153,7 +179,8 @@ End Function
 
 
 Public Function ProjectToPlane3(V As tVec3, PlaneN As tVec3) As tVec3
-' unsure !
+Attribute ProjectToPlane3.VB_UserMemId = 1610612750
+    ' unsure !
     ProjectToPlane3 = DIFF3(V, Project3(V, PlaneN))
     'https://www.physicsforums.com/threads/projecting-a-vector-onto-a-plane.496184/
     'Project3 = CROSS3(V2nrmlzd, CROSS3(v, V2nrmlzd))
@@ -163,9 +190,10 @@ End Function
 
 
 Public Function Rotate3(P As tVec3, Direc As tVec3) As tVec3
+Attribute Rotate3.VB_UserMemId = 1610612751
 
-' TO TEST and ADJUST
-'Stop
+    ' TO TEST and ADJUST
+    'Stop
 
     Dim U         As tVec3
     Dim W         As tVec3
@@ -252,6 +280,7 @@ End Function
 
 
 Public Function ToString3(V As tVec3) As String
+Attribute ToString3.VB_UserMemId = 1610612752
     ToString3 = V.X & "   " & V.Y & "   " & V.Z
 End Function
 
@@ -263,10 +292,10 @@ End Function
 ''''   http://paulbourke.net/geometry/rotate/
 ''''   http://paulbourke.net/geometry/rotate/source.c
 ''''******************************************************************
-'''Public Function Rotate3Axe(P As tVec3, Axe As tVec3, theta As Double) As tVec3
-'''    Dim L         As Double
-'''    Dim CosTheta  As Double
-'''    Dim SinTheta  As Double
+'''Public Function Rotate3Axe(P As tVec3, Axe As tVec3, theta As single) As tVec3
+'''    Dim L         As single
+'''    Dim CosTheta  As single
+'''    Dim SinTheta  As single
 '''
 '''    'http://paulbourke.net/geometry/rotate/source.c
 '''
@@ -306,10 +335,11 @@ End Function
 
 
 Public Function Rotate3xz(V As tVec3, DirectionXZ As tVec3) As tVec3
+Attribute Rotate3xz.VB_UserMemId = 1610612753
 
 
-' Corrected ONE:
-'http://www.vbforums.com/showthread.php?874965-Rotation-using-DOT-product
+    ' Corrected ONE:
+    'http://www.vbforums.com/showthread.php?874965-Rotation-using-DOT-product
 
     Rotate3xz.X = DOT3(V, Vec3(DirectionXZ.X, 0, -DirectionXZ.Z))
     'Rotate3xz.Y = V.Y * 1
@@ -320,6 +350,7 @@ End Function
 
 
 Public Function Rotate3xy(V As tVec3, DirectionXY As tVec3) As tVec3
+Attribute Rotate3xy.VB_UserMemId = 1610809351
 
     Rotate3xy.X = DOT3(V, Vec3(DirectionXY.X, DirectionXY.Y, 0))
     Rotate3xy.Y = DOT3(V, Vec3(-DirectionXY.Y, DirectionXY.X, 0))
@@ -328,6 +359,7 @@ Public Function Rotate3xy(V As tVec3, DirectionXY As tVec3) As tVec3
 End Function
 
 Public Function Rotate3yz(V As tVec3, DirectionYZ As tVec3) As tVec3
+Attribute Rotate3yz.VB_UserMemId = 1610612755
 
     Rotate3yz.X = DOT3(V, Vec3(1, 0, 0))
     Rotate3yz.Y = DOT3(V, Vec3(0, DirectionYZ.Y, DirectionYZ.Z))
@@ -336,6 +368,7 @@ Public Function Rotate3yz(V As tVec3, DirectionYZ As tVec3) As tVec3
 End Function
 
 Public Function Rotate3zx(V As tVec3, DirectionZX As tVec3) As tVec3
+Attribute Rotate3zx.VB_UserMemId = 1610612756
 
     Rotate3zx.Z = DOT3(V, Vec3(0, DirectionZX.X, DirectionZX.Z))
     Rotate3zx.Y = DOT3(V, Vec3(0, 1, 0))
@@ -346,12 +379,13 @@ End Function
 
 
 Public Function RayPlaneIntersect(rayVector As tVec3, rayPoint As tVec3, PlaneNormal As tVec3, planePoint As tVec3) As tVec3
-'https://rosettacode.org/wiki/Find_the_intersection_of_a_line_with_a_plane#C.23
+Attribute RayPlaneIntersect.VB_UserMemId = 1610612757
+    'https://rosettacode.org/wiki/Find_the_intersection_of_a_line_with_a_plane#C.23
 
     Dim Diff      As tVec3
-    Dim prod1     As Double
-    Dim prod2     As Double
-    Dim prod3     As Double
+    Dim prod1     As Single
+    Dim prod2     As Single
+    Dim prod3     As Single
 
     Diff = DIFF3(rayPoint, planePoint)
     prod1 = DOT3(Diff, PlaneNormal)
@@ -363,7 +397,8 @@ End Function
 
 
 Public Function XZPerp(V As tVec3) As tVec3
-'LHR
+Attribute XZPerp.VB_UserMemId = 1610612758
+    'LHR
     XZPerp.X = V.Z
     XZPerp.Y = V.Y
     XZPerp.Z = -V.X
@@ -378,7 +413,8 @@ End Function
 
 
 
-Public Function Rotor3(A As Double, b01 As Double, b02 As Double, b12 As Double) As tRotor3
+Public Function Rotor3(A As Single, b01 As Single, b02 As Single, b12 As Single) As tRotor3
+Attribute Rotor3.VB_UserMemId = 1610612759
     With Rotor3
         .A = A
         .b01 = b01
@@ -389,7 +425,8 @@ End Function
 
 
 Public Function Rotor3Normalize(R As tRotor3) As tRotor3
-    Dim L         As Double
+Attribute Rotor3Normalize.VB_UserMemId = 1610612760
+    Dim L         As Single
 
     With R
         L = .A * .A + .b01 * .b01 + .b02 * .b02 + .b12 * .b12
@@ -409,6 +446,7 @@ End Function
 ' construct the rotor that rotates one vector to another
 'uses the usual trick to get the half angle
 Public Function Rotor3FT(vFrom As tVec3, vTo As tVec3) As tRotor3
+Attribute Rotor3FT.VB_UserMemId = 1610612761
     Dim minusb    As tVec3
 
     With Rotor3FT
@@ -416,9 +454,9 @@ Public Function Rotor3FT(vFrom As tVec3, vTo As tVec3) As tRotor3
         .A = 1 + DOT3(vTo, vFrom)
         ' the left side of the products have b a, not a b, so flip
         minusb = WEDGE3(vTo, vFrom)
-        .b01 = minusb.X      '.b01
-        .b02 = minusb.Y      '.b02
-        .b12 = minusb.Z      '.b12
+        .b01 = minusb.X            '.b01
+        .b02 = minusb.Y            '.b02
+        .b12 = minusb.Z            '.b12
     End With
 
     Rotor3FT = Rotor3Normalize(Rotor3FT)
@@ -427,8 +465,9 @@ End Function
 
 
 ' angle+plane, plane must be normalized
-Public Function Rotor3AP(angleRadian As Double, BiVectorPlane As tVec3) As tRotor3
-    Dim SinA      As Double
+Public Function Rotor3AP(angleRadian As Single, BiVectorPlane As tVec3) As tRotor3
+Attribute Rotor3AP.VB_UserMemId = 1610612762
+    Dim SinA      As Single
 
     With Rotor3AP
         SinA = Sin(angleRadian * 0.5)
@@ -442,8 +481,9 @@ Public Function Rotor3AP(angleRadian As Double, BiVectorPlane As tVec3) As tRoto
 End Function
 
 Public Function Rotor3Product(P As tRotor3, Q As tRotor3) As tRotor3
-' Rotor3-Rotor3 product
-' non-optimized
+Attribute Rotor3Product.VB_UserMemId = 1610612763
+    ' Rotor3-Rotor3 product
+    ' non-optimized
     With Rotor3Product
         .A = P.A * Q.A _
              - P.b01 * Q.b01 - P.b02 * Q.b02 - P.b12 * Q.b12
@@ -464,9 +504,10 @@ End Function
 
 
 Public Function Rotate3WithRotor(V As tVec3, R As tRotor3) As tVec3
+Attribute Rotate3WithRotor.VB_UserMemId = 1610612764
 
     Dim Q         As tVec3
-    Dim q012      As Double
+    Dim q012      As Single
 
     ' q = R V
     Q.X = R.A * V.X + V.Y * R.b01 + V.Z * R.b02
@@ -497,12 +538,13 @@ End Function
 
 
 
-Public Function fastEXP(ByVal V As Double) As Double
-'https://en.wikipedia.org/wiki/Pad%C3%A9_approximant
-    Dim X2        As Double
-    Dim X3        As Double
-    Dim X4        As Double
-    Dim X5        As Double
+Public Function fastEXP(ByVal V As Single) As Single
+Attribute fastEXP.VB_UserMemId = 1610612765
+    'https://en.wikipedia.org/wiki/Pad%C3%A9_approximant
+    Dim X2        As Single
+    Dim X3        As Single
+    Dim X4        As Single
+    Dim X5        As Single
 
 
     If V < 5! Then
@@ -527,8 +569,9 @@ End Function
 
 
 Public Function FastSIN(ByVal X As Single) As Single
-'https://math.stackexchange.com/questions/2196371/how-to-approximate-sinx-using-pad%C3%A9-approximation
-' ORDER 13 K 4
+Attribute FastSIN.VB_UserMemId = 1610612766
+    'https://math.stackexchange.com/questions/2196371/how-to-approximate-sinx-using-pad%C3%A9-approximation
+    ' ORDER 13 K 4
 
     Dim X2        As Single
     Dim X3        As Single
@@ -551,11 +594,13 @@ Public Function FastSIN(ByVal X As Single) As Single
 End Function
 
 Public Function FastCOS(ByVal X As Single) As Single
+Attribute FastCOS.VB_UserMemId = 1610612767
     FastCOS = FastSIN(X + PIh)
 End Function
 
 
-Public Function AngleDIFF(ByRef A1 As Double, ByRef A2 As Double) As Double
+Public Function AngleDIFF(ByRef A1 As Single, ByRef A2 As Single) As Single
+Attribute AngleDIFF.VB_UserMemId = 1610612768
 
     AngleDIFF = A1 - A2
     While AngleDIFF < -PI
@@ -568,11 +613,11 @@ End Function
 
 
 ''https://github.com/processing/processing/blob/349f413a3fb63a75e0b096097a5b0ba7f5565198/core/src/processing/core/PVector.java
-'Public Function AngleBetween(V1 As tVec3, v2 As tVec3) As Double
-'    Dim Dot       As Double
-'    Dim v1Mag     As Double
-'    Dim v2Mag     As Double
-'    Dim amt       As Double
+'Public Function AngleBetween(V1 As tVec3, v2 As tVec3) As single
+'    Dim Dot       As single
+'    Dim v1Mag     As single
+'    Dim v2Mag     As single
+'    Dim amt       As single
 '
 '    Dot = V1.X * v2.X + V1.Y * v2.Y + V1.Z * v2.Z
 '    v1Mag = Sqr(V1.X * V1.X + V1.Y * V1.Y + V1.Z * V1.Z)
@@ -595,11 +640,12 @@ End Function
 '
 'End Function
 
-Public Function AngleBetween(V1 As tVec3, V2 As tVec3) As Double
-'http://www.dotnetframework.org/default.aspx/Net/Net/3@5@50727@3053/DEVDIV/depot/DevDiv/releases/Orcas/SP/wpf/src/Core/CSharp/System/Windows/Media3D/Vector3D@cs/1/Vector3D@cs
+Public Function AngleBetween(V1 As tVec3, V2 As tVec3) As Single
+Attribute AngleBetween.VB_UserMemId = 1610612769
+    'http://www.dotnetframework.org/default.aspx/Net/Net/3@5@50727@3053/DEVDIV/depot/DevDiv/releases/Orcas/SP/wpf/src/Core/CSharp/System/Windows/Media3D/Vector3D@cs/1/Vector3D@cs
 
 
-    Dim Ratio     As Double
+    Dim Ratio     As Single
     Dim nV1       As tVec3
     Dim nV2       As tVec3
 
@@ -610,10 +656,10 @@ Public Function AngleBetween(V1 As tVec3, V2 As tVec3) As Double
 
     If (Ratio < 0) Then
         '   Math.PI - 2.0 * Math.Asin((-vector1 - vector2).Length / 2.0);
-        AngleBetween = PI - 2# * ArcSin(Length3(SUM3(nV1, nV2)) * 0.5)
+        AngleBetween = PI - 2 * ArcSin(Length3(SUM3(nV1, nV2)) * 0.5)
     Else
         '   2.0 * Math.Asin((vector1 - vector2).Length / 2.0);
-        AngleBetween = 2# * ArcSin(Length3(DIFF3(nV1, nV2)) * 0.5)
+        AngleBetween = 2 * ArcSin(Length3(DIFF3(nV1, nV2)) * 0.5)
     End If
 
 End Function

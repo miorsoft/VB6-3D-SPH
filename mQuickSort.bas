@@ -3,21 +3,23 @@ Option Explicit
 'http://www.vbforums.com/showthread.php?231925-VB-Quick-Sort-algorithm-(very-fast-sorting-algorithm)&p=4739885&viewfull=1#post4739885
 
 Public SORTSWAPS  As Long
+Attribute SORTSWAPS.VB_VarUserMemId = 1073938433
 
 
-Public Sub QuicksortSingle(List() As Double, ByVal min As Long, ByVal max As Long)
-' from Low to hi
-    Dim med_value As Double
+Public Sub QuicksortSingle(List() As Single, ByVal Min As Long, ByVal Max As Long)
+Attribute QuicksortSingle.VB_UserMemId = 1073938434
+    ' from Low to hi
+    Dim med_value As Single
     Dim hi        As Long
     Dim lo        As Long
     Dim I         As Long
-    If max <= min Then Exit Sub
+    If Max <= Min Then Exit Sub
     'I = Int((max - min + 1) * Rnd + min)
-    I = (max + min) \ 2
+    I = (Max + Min) \ 2
     med_value = List(I)
-    List(I) = List(min)
-    lo = min
-    hi = max
+    List(I) = List(Min)
+    lo = Min
+    hi = Max
     Do
         Do While List(hi) >= med_value
             hi = hi - 1&
@@ -43,31 +45,32 @@ Public Sub QuicksortSingle(List() As Double, ByVal min As Long, ByVal max As Lon
         List(hi) = List(lo)
 
     Loop
-    QuicksortSingle List(), min, lo - 1&
-    QuicksortSingle List(), lo + 1&, max
+    QuicksortSingle List(), Min, lo - 1&
+    QuicksortSingle List(), lo + 1&, Max
 End Sub
 
 
-Public Sub QuickSortSingle2(Dist() As Double, OtherInfo() As Long, ByVal min As Long, ByVal max As Long)
+Public Sub QuickSortSingle2(Dist() As Single, OtherInfo() As Long, ByVal Min As Long, ByVal Max As Long)
+Attribute QuickSortSingle2.VB_UserMemId = 1073741850
 
-    Dim med_value As Double
+    Dim med_value As Single
     Dim med_OtherInfo As Long
 
     Dim hi        As Long
     Dim lo        As Long
     Dim I         As Long
-    If max <= min Then Exit Sub
+    If Max <= Min Then Exit Sub
     '  I = Int((max - min + 1) * Rnd + min)
-    I = (max + min) \ 2
+    I = (Max + Min) \ 2
 
     med_value = Dist(I)
     med_OtherInfo = OtherInfo(I)
 
-    Dist(I) = Dist(min)
-    OtherInfo(I) = OtherInfo(min)
+    Dist(I) = Dist(Min)
+    OtherInfo(I) = OtherInfo(Min)
 
-    lo = min
-    hi = max
+    lo = Min
+    hi = Max
     Do
         Do While Dist(hi) >= med_value
             hi = hi - 1&
@@ -97,29 +100,33 @@ Public Sub QuickSortSingle2(Dist() As Double, OtherInfo() As Long, ByVal min As 
         OtherInfo(hi) = OtherInfo(lo)
         SORTSWAPS = SORTSWAPS + 1&
     Loop
-    QuickSortSingle2 Dist(), OtherInfo(), min, lo - 1&
-    QuickSortSingle2 Dist(), OtherInfo(), lo + 1&, max
+    QuickSortSingle2 Dist(), OtherInfo(), Min, lo - 1&
+    QuickSortSingle2 Dist(), OtherInfo(), lo + 1&, Max
 End Sub
 
 
 
-Public Sub QuickSortSingle3(Dist() As Double, OtherInfo() As Long, ByVal min As Long, ByVal max As Long)
-' FROM HI to LOW  'https://www.vbforums.com/showthread.php?11192-quicksort
-    Dim LOW As Long, HIGH As Long, temp As Double, TestElement As Double, tmp&
+Public Sub QuickSortSingle3(Dist() As Single, OtherInfo() As Long, ByVal Min As Long, ByVal Max As Long)
+Attribute QuickSortSingle3.VB_UserMemId = 1610612744
+    ' FROM HI to LOW  'https://www.vbforums.com/showthread.php?11192-quicksort
+    Dim Low As Long, high As Long, temp As Single, TestElement As Single, tmp&
     '     Debug.Print min, max
-    LOW = min: HIGH = max
-    TestElement = Dist((min + max) \ 2)
-'    TestElement = (Dist(min) + Dist(max)) * 0.5
+    Low = Min: high = Max
+    '    TestElement = Dist((Min + Max) \ 2)
+    TestElement = (Dist(Min) + Dist(Max)) * 0.5
     Do
-        Do While Dist(LOW) > TestElement: LOW = LOW + 1&: Loop
-        Do While Dist(HIGH) < TestElement: HIGH = HIGH - 1&: Loop
-        If (LOW <= HIGH) Then
-            temp = Dist(LOW): Dist(LOW) = Dist(HIGH): Dist(HIGH) = temp
-            tmp = OtherInfo(LOW): OtherInfo(LOW) = OtherInfo(HIGH): OtherInfo(HIGH) = tmp
-            LOW = LOW + 1&: HIGH = HIGH - 1&
+        Do While Dist(Low) > TestElement: Low = Low + 1&: Loop
+        Do While Dist(high) < TestElement: high = high - 1&: Loop
+        If (Low <= high) Then
+            temp = Dist(Low): Dist(Low) = Dist(high): Dist(high) = temp
+            tmp = OtherInfo(Low): OtherInfo(Low) = OtherInfo(high): OtherInfo(high) = tmp
+            Low = Low + 1&: high = high - 1&
             SORTSWAPS = SORTSWAPS + 1&
         End If
-    Loop While (LOW <= HIGH)
-    If (min < HIGH) Then QuickSortSingle3 Dist(), OtherInfo(), min, HIGH
-    If (LOW < max) Then QuickSortSingle3 Dist(), OtherInfo(), LOW, max
+    Loop While (Low <= high)
+    If (Min < high) Then QuickSortSingle3 Dist(), OtherInfo(), Min, high
+    If (Low < Max) Then QuickSortSingle3 Dist(), OtherInfo(), Low, Max
 End Sub
+
+
+

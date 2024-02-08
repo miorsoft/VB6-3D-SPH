@@ -18,11 +18,16 @@ Private Declare Sub AssignZero Lib "kernel32" Alias "RtlZeroMemory" (pDst As Any
 
 
 Private Spacing   As Long
+Attribute Spacing.VB_VarUserMemId = 1073938434
 Private TableSize As Long
+Attribute TableSize.VB_VarUserMemId = 1073938435
 Private cellStart() As Long
 Private cellEntries() As Long
+Attribute cellEntries.VB_VarUserMemId = 1073938435
 Private mQueryIds() As Long
+Attribute mQueryIds.VB_VarUserMemId = 1610809344
 Public querySize  As Long
+Attribute querySize.VB_VarUserMemId = 1073938432
 
 
 Friend Property Get QueryIds(I As Long) As Long
@@ -41,19 +46,19 @@ End Sub
 '                    return Math.abs(h) % this.tableSize;
 '                }
 
-Friend Function hashCoords(Xi#, Yi#, Zi#) As Long
-    Dim h#
+Friend Function hashCoords(Xi As Single, Yi As Single, Zi As Single) As Long
+    Dim H         As Single
     'h = (Xi * 92837111) ^ (Yi * 689287499) ^ (Zi * 283923481)    '  // fantasy function
-    h = (Xi * 0.92837111) * (Yi * 6.89287499) * (Zi * 2.83923481)    '  // fantasy function
+    H = (Xi * 0.92837111) * (Yi * 6.89287499) * (Zi * 2.83923481)    '  // fantasy function
 
-    hashCoords = Abs(h) Mod TableSize
+    hashCoords = Abs(H) Mod TableSize
 End Function
 
 'intCoord(coord) {
 '                    return Math.floor(coord / this.spacing);
 '                }
 
-Friend Function intCoord(coord#) As Long
+Friend Function intCoord(coord As Single) As Long
     intCoord = coord \ Spacing
 End Function
 
@@ -109,9 +114,9 @@ End Function
 '                }
 
 
-Friend Sub InsertPoints2(X() As Double, Y() As Double, Z() As Double)
+Friend Sub InsertPoints2(X() As Single, Y() As Single, Z() As Single)
     Dim numObjects&
-    Dim I&, Start&, h&
+    Dim I&, Start&, H&
     numObjects = UBound(X)
     If UBound(cellEntries) < numObjects Then numObjects = UBound(cellEntries)
 
@@ -127,8 +132,8 @@ Friend Sub InsertPoints2(X() As Double, Y() As Double, Z() As Double)
     AssignZero cellEntries(0), LenB(cellEntries(0)) * (UBound(cellEntries) + 1)
 
     For I = 1 To numObjects
-        h = hashPos(Vec3(X(I), Y(I), Z(I)))
-        cellStart(h) = cellStart(h) + 1
+        H = hashPos(Vec3(X(I), Y(I), Z(I)))
+        cellStart(H) = cellStart(H) + 1
     Next
 
     '// determine cells starts
@@ -138,23 +143,23 @@ Friend Sub InsertPoints2(X() As Double, Y() As Double, Z() As Double)
         Start = Start + cellStart(I)
         cellStart(I) = Start
     Next
-    cellStart(TableSize) = Start    '; // guard
+    cellStart(TableSize) = Start   '; // guard
 
     ' // fill in objects ids
 
     For I = 1 To numObjects
-        h = hashPos(Vec3(X(I), Y(I), Z(I)))
+        H = hashPos(Vec3(X(I), Y(I), Z(I)))
         ' this.cellStart[h]--;
         ' this.cellEntries[this.cellStart[h]] = i;
-        cellStart(h) = cellStart(h) - 1&
-        cellEntries(cellStart(h)) = I
+        cellStart(H) = cellStart(H) - 1&
+        cellEntries(cellStart(H)) = I
     Next
 End Sub
 Friend Sub InsertPoints(Pos() As tVec3)
 
-'                    var numObjects = Math.min(pos.length / 3, this.cellEntries.length);
+    '                    var numObjects = Math.min(pos.length / 3, this.cellEntries.length);
     Dim numObjects&
-    Dim I&, Start&, h&
+    Dim I&, Start&, H&
     numObjects = UBound(Pos)
     If UBound(cellEntries) < numObjects Then numObjects = UBound(cellEntries)
 
@@ -172,8 +177,8 @@ Friend Sub InsertPoints(Pos() As tVec3)
     AssignZero cellEntries(0), LenB(cellEntries(0)) * (UBound(cellEntries))
 
     For I = 1 To numObjects
-        h = hashPos(Pos(I))
-        cellStart(h) = cellStart(h) + 1
+        H = hashPos(Pos(I))
+        cellStart(H) = cellStart(H) + 1
     Next
 
     '// determine cells starts
@@ -183,16 +188,16 @@ Friend Sub InsertPoints(Pos() As tVec3)
         Start = Start + cellStart(I)
         cellStart(I) = Start
     Next
-    cellStart(TableSize) = Start    '; // guard
+    cellStart(TableSize) = Start   '; // guard
 
     ' // fill in objects ids
 
     For I = 1 To numObjects
-        h = hashPos(Pos(I))
+        H = hashPos(Pos(I))
         ' this.cellStart[h]--;
         ' this.cellEntries[this.cellStart[h]] = i;
-        cellStart(h) = cellStart(h) - 1&
-        cellEntries(cellStart(h)) = I
+        cellStart(H) = cellStart(H) - 1&
+        cellEntries(cellStart(H)) = I
     Next
 End Sub
 
@@ -224,28 +229,28 @@ End Sub
 '                    }
 '                }
 
-Friend Sub Query(Pos As tVec3, maxDist As Double)
-    Dim x0&, y0&, z0&
-    Dim x1&, y1&, z1&
+Friend Sub Query(Pos As tVec3, maxDist As Single)
+    Dim X0&, Y0&, Z0&
+    Dim X1&, Y1&, Z1&
     Dim Xi&, Yi&, Zi&
-    Dim h&, iStart&, iEnd&
+    Dim H&, iStart&, iEnd&
     Dim I&
-    x0 = intCoord(Pos.X - maxDist)
-    y0 = intCoord(Pos.Y - maxDist)
-    z0 = intCoord(Pos.Z - maxDist)
+    X0 = intCoord(Pos.X - maxDist)
+    Y0 = intCoord(Pos.Y - maxDist)
+    Z0 = intCoord(Pos.Z - maxDist)
 
-    x1 = intCoord(Pos.X + maxDist)
-    y1 = intCoord(Pos.Y + maxDist)
-    z1 = intCoord(Pos.Z + maxDist)
+    X1 = intCoord(Pos.X + maxDist)
+    Y1 = intCoord(Pos.Y + maxDist)
+    Z1 = intCoord(Pos.Z + maxDist)
 
     querySize = 0
 
-    For Xi = x0 To x1
-        For Yi = y0 To y1
-            For Zi = z0 To z1
-                h = hashCoords(Xi * 1&, Yi * 1&, Zi * 1&)
-                iStart = cellStart(h)
-                iEnd = cellStart(h + 1&)
+    For Xi = X0 To X1
+        For Yi = Y0 To Y1
+            For Zi = Z0 To Z1
+                H = hashCoords(Xi * 1&, Yi * 1&, Zi * 1&)
+                iStart = cellStart(H)
+                iEnd = cellStart(H + 1&)
                 '
                 '                                for (var i = iStart; i < end; i++) {
                 '                                    this.mqueryIds[this.querySize] = this.cellEntries[i];
